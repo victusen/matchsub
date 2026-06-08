@@ -17,9 +17,9 @@ cron.schedule("5 0 * * *", async () => {
 });
 
 cron.schedule("* * * * *", async () => {
-    console.time("jobq");
-    if (jobs.length === 0) return console.log("No jobs to process");
+    if (jobs.length === 0) return;
 
+    console.time("jobq");
     const jobsToProcess = [...jobs];
     jobs = [];
 
@@ -46,4 +46,4 @@ http.createServer((req, res) => {
         scheduledFixtures: jobs.length,
         uptime: process.uptime().toFixed(0) + "s"
     }));
-}).listen(PORT, () => console.log(`Health check server listening on port ${PORT}`));
+}).listen(PORT, () => console.log(`Health check server listening on port ${PORT}`));
