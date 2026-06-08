@@ -20,8 +20,7 @@ cron.schedule("* * * * *", async () => {
     if (jobs.length === 0) return;
 
     console.time("jobq");
-    const jobsToProcess = [...jobs];
-    jobs = [];
+    const jobsToProcess = jobs.splice(0);
 
     let i = 1;
     for (const job of jobsToProcess) {

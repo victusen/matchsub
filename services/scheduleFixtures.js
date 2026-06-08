@@ -46,6 +46,7 @@ export async function scheduleFixturesForToday(jobs) {
                 try {
                     const post = getKickoffString(f);
                     jobsQueue.push(post);
+                    console.log("[Kickoff Queued]: ", f.homeTeam, "vs", f.awayTeam, "Queue size:", jobsQueue.length);
                 } catch (err) {
                     console.log("job to post kickoff: " + f.homeTeam + " vs " + f.awayTeam + " failed");
                     return;
@@ -62,6 +63,7 @@ export async function scheduleFixturesForToday(jobs) {
                     const post = await postLineup(f);
                     if (post) {
                         jobsQueue.push(post);
+                        console.log("[Lineup Queued]: ", f.homeTeam, "vs", f.awayTeam, "Queue size:", jobsQueue.length);
                     }
                 } catch (err) {
                     console.log("job to post lineup: " + f.homeTeam + " vs " + f.awayTeam + " failed");
