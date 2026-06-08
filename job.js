@@ -11,10 +11,10 @@ export let jobs = [];
 scheduleFixturesForToday(jobs);
 
 // Schedule daily sync at 00:05 AM
-cron.schedule("5 0 * * *", async () => {
+cron.schedule("0 8 * * *", async () => {
     console.log("Daily sync: scheduling fixtures for the new day...");
     await scheduleFixturesForToday(jobs);
-});
+}, {timezone: "Africa/Lagos"});
 
 cron.schedule("* * * * *", async () => {
     if (jobs.length === 0) return;
