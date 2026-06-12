@@ -1,7 +1,4 @@
 import axios from 'axios'
-import dotenv from "dotenv";
-
-dotenv.config();
 
 const PAGE_ID = process.env.FACEBOOK_PAGE_ID;
 const PAGE_TOKEN = process.env.FACEBOOK_PAGE_TOKEN;
@@ -17,6 +14,8 @@ export const postToFacebook = async (message, imageUrl = "") => {
         }
 
         const res = await axios.post(url, data);
+
+        console.log("Post ID: " + res.data.id + "\n " + res);
         return {
             success: true,
             postId: res.data.id,

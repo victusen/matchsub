@@ -42,7 +42,7 @@ http.createServer((req, res) => {
         scheduledFixtures: jobs.length,
         uptime: process.uptime().toFixed(0) + "s"
     }));
-}).listen(PORT, () => console.log(`Health check server listening on port ${PORT}`));
+}).listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 setInterval(async () => {
     try {
