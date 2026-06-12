@@ -2,6 +2,7 @@ import cron from "node-cron";
 import axios from "axios";
 import { fetchTodayFixtures } from "./footballServices.js";
 import { filterMenFixtures } from "../controller/filterMenFixture.js";
+import insertToSupabase from "./supabase.js";
 import getLineupTime from "../utils/get-lineup-time.js";
 import getCron from "../utils/get-cron-syntax.js"; 
 import getLineup from "../utils/get-lineup-string.js";
@@ -25,7 +26,7 @@ export async function scheduleFixturesForToday(jobs) {
         // Clear existing schedules for the new run
         scheduledFixture.length = 0;
 
-        todayFixtures.forEach(f => {
+        for (const f of todayFixtures) {
           scheduledFixture.push({
             fixtureId: f.fixture.id,
             homeTeam: f.teams.home.name,
@@ -33,7 +34,15 @@ export async function scheduleFixturesForToday(jobs) {
             kickOffTime: f.fixture.date,
             lineUpTime: getLineupTime(f.fixture.date),
           });
-        });
+
+          await insertToSupabase({
+            fixture_id: f.fixture.id,
+            home_team: f.teams.home.name,
+            away_team: f.teams.away.name,
+            kickoff_time: f.fixture.date,
+            lineup_time: getLineupTime(f.fixture.date),
+          });
+        };
 
         console.log("Scheduled fixtures:", scheduledFixture);
 
