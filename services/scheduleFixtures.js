@@ -1,14 +1,11 @@
 import cron from "node-cron";
 import axios from "axios";
-import dotenv from "dotenv";
 import { fetchTodayFixtures } from "./footballServices.js";
 import { filterMenFixtures } from "../controller/filterMenFixture.js";
 import getLineupTime from "../utils/get-lineup-time.js";
 import getCron from "../utils/get-cron-syntax.js"; 
 import getLineup from "../utils/get-lineup-string.js";
 import getKickoffString from "../utils/get-kickoff-string.js";
-
-dotenv.config();
 
 export const scheduledFixture = []; 
 
@@ -40,13 +37,14 @@ export async function scheduleFixturesForToday(jobs) {
 
         console.log("Scheduled fixtures:", scheduledFixture);
 
+        // Start creating Queues
         scheduledFixture.forEach(f => {
-            // cron for posting kick off
+            // Create kick off cron job
             const job = cron.schedule(getCron(f.kickOffTime), () => {
                 try {
                     const post = getKickoffString(f);
                     jobsQueue.push(post);
-                    console.log("[Kickoff Queued]: ", f.homeTeam, "vs", f.awayTeam, "Queue size:", jobsQueue.length);
+                    console.log("[Kickoff Queue]: ", f.homeTeam, "vs", f.awayTeam, "Queue size:", jobsQueue.length);
                 } catch (err) {
                     console.log("job to post kickoff: " + f.homeTeam + " vs " + f.awayTeam + " failed");
                     return;
@@ -57,7 +55,7 @@ export async function scheduleFixturesForToday(jobs) {
                 }        
             });
 
-            // cron for posting lineup
+            // Create lineup cron job 
             const ljob = cron.schedule(getCron(f.lineUpTime), async () => {
                 try {
                     const post = await postLineup(f);
@@ -89,15 +87,16 @@ async function postLineup(fixture) {
             }
         };
         const response = await axios.get(URL, PARAMS);
-        console.log("gotten response");
+        console.log("Gotten Line-up for: " + fixture.homeTeam + " vs " + fixture.awayTeam);
         
         const lineups = response.data.response;
         if (!lineups || lineups.length < 2) {
-            console.log("Lineup not ready yet for " + fixture.homeTeam + " vs " + fixture.awayTeam);
+            console.log("Lineup not ready yet for " + fixture.homeTeam + " vs " + fixture.awayTeam + " atleast not both teams.");
+            // Return 
             return null;
         }
         
-        console.log("gotten lineup for " + fixture.homeTeam + " vs " + fixture.awayTeam);
+        console.log("Line-ups for " + fixture.homeTeam + " vs " + fixture.awayTeam + " gotten");
         return getLineup(lineups);
 
     } catch (err) {

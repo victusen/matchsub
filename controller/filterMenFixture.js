@@ -1,9 +1,7 @@
-import { watchedCountries } from "../config/constants.js";
-
-
-
+import { watchedClubs, watchedCountries } from "../config/constants.js";
 
 const watchedCountriesLower = watchedCountries.map(c => c.toLowerCase());
+const watchedClubsLower = watchedClubs.map(c => c.toLowerCase());
 
 export function filterMenFixtures(fixtures) {
   if (!fixtures || !Array.isArray(fixtures)) return [];
@@ -12,6 +10,9 @@ export function filterMenFixtures(fixtures) {
     const home = f.teams.home.name.toLowerCase();
     const away = f.teams.away.name.toLowerCase();
 
-    return watchedCountriesLower.includes(home) || watchedCountriesLower.includes(away);
+    return watchedClubsLower.includes(home) || 
+    watchedClubsLower.includes(away) ||
+    watchedCountriesLower.includes(home) || 
+    watchedCountriesLower.includes(away);
   });
 }
