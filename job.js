@@ -1,5 +1,5 @@
 console.log("JOB.JS LOADED");
- import http from "http";
+import http from "http";
 import cron from "node-cron";
 import { postToFacebook } from "./controller/facebookController.js";
 import { scheduleFixturesForToday } from "./services/scheduleFixtures.js";
@@ -16,6 +16,10 @@ cron.schedule("0 8 * * *", async () => {
     await scheduleFixturesForToday(jobs);
 }, {timezone: "Africa/Lagos"});
 
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 cron.schedule("* * * * *", async () => {
     if (jobs.length === 0) return;
 
@@ -29,6 +33,11 @@ cron.schedule("* * * * *", async () => {
         await postToFacebook(job); 
         console.log("[POSTED]: ");
         console.timeEnd("POSTED: " + i + " " + job);
+
+        const delay = generateNumber(15000, 90000);
+        console.log("[RESTED]: " + delay/1000 + "s");
+        await sleep(delay);
+
         i++;
     };
 });
@@ -44,12 +53,25 @@ http.createServer((req, res) => {
     }));
 }).listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
-setInterval(async () => {
+function generateNumber(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+async function pingAlways() {
+    const randomDelay = generateNumber(360000, 780000);
+
     try {
-        console.log("Pinging up the Server...");
+        console.log("13mins: Pinging server up...");
         const res = await fetch('https://matchsub.onrender.com');
-        console.log("Server is up again\n\n", res.status, "\n\n");
-    } catch (error) {
-        console.log("Server is down\n\n", error.message, "\n\n");
+        console.log("Server is up again\n", res.status, "\n");
+    } catch (err) {
+        console.log("[DOWN]: Server is down\n", err.message, "\n");
     }
-}, 780000);
+
+    console.log("THE NEXT_PING IN " + randomDelay/1000 + "s");
+    
+
+    setTimeout(() => pingAlways(), randomDelay);
+}
+
+pingAlways();
