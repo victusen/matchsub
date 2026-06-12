@@ -28,5 +28,4 @@ export async function sendToSupabase ({fixture_id, home_team, away_team, kickoff
     } catch (err) {
         console.error("Unexpected Error:", err);
     }
-    
 }; 
