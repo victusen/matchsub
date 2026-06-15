@@ -5,7 +5,7 @@ dotenv.config();
 const Url = process.env.SUPABASE_URL;
 const Key = process.env.SUPABASE_ANON_KEY;
 
-const supabase = createClient(Url, Key);
+export const supabase = createClient(Url, Key);
 
 export default async function insertToSupabase({fixture_id, home_team, away_team, kickoff_time, lineup_time }) {
     try {
