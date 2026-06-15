@@ -34,9 +34,9 @@ cron.schedule("* * * * *", async () => {
         console.log("[POSTED]: ");
         console.timeEnd("POSTED: " + i + " " + job);
 
-        const delay = generateNumber(15000, 90000);
-        console.log("[RESTED]: " + delay/1000 + "s");
-        await sleep(delay);
+        // const delay = generateNumber(15000, 90000); //15secs and 90sec
+        // console.log("[RESTING]: " + delay/1000 + "s");
+        await sleep(20000);
 
         i++;
     };
@@ -53,25 +53,25 @@ http.createServer((req, res) => {
     }));
 }).listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
-function generateNumber(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+// function generateNumber(min, max) {
+//     return Math.floor(Math.random() * (max - min + 1)) + min;
+// }
 
-async function pingAlways() {
-    const randomDelay = generateNumber(360000, 780000);
+// async function pingAlways() {
+//     const randomDelay = generateNumber(360000, 780000);
 
-    try {
-        console.log("13mins: Pinging server up...");
-        const res = await fetch('https://matchsub.onrender.com');
-        console.log("Server is up again\n", res.status, "\n");
-    } catch (err) {
-        console.log("[DOWN]: Server is down\n", err.message, "\n");
-    }
+//     try {
+//         console.log("13mins: Pinging server up...");
+//         const res = await fetch('https://matchsub.onrender.com');
+//         console.log("Server is up again\n", res.status, "\n");
+//     } catch (err) {
+//         console.log("[DOWN]: Server is down\n", err.message, "\n");
+//     }
 
-    console.log("THE NEXT_PING IN " + randomDelay/1000 + "s");
+//     console.log("THE NEXT_PING IN " + randomDelay/1000 + "s");
     
 
-    setTimeout(() => pingAlways(), randomDelay);
-}
+//     setTimeout(() => pingAlways(), randomDelay);
+// }
 
-pingAlways();
+// pingAlways();
