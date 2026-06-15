@@ -5,3 +5,5 @@ data/
 logs/
 
 .DS_Store
+
+utils/test.js
