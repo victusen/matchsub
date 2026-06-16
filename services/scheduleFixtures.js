@@ -2,89 +2,135 @@ import cron from "node-cron";
 import axios from "axios";
 import { fetchTodayFixtures } from "./footballServices.js";
 import { filterMenFixtures } from "../controller/filterMenFixture.js";
-import insertToSupabase from "./supabase.js";
+import { supabase, insertToSupabase } from "./supabase.js";
 import getLineupTime from "../utils/get-lineup-time.js";
 import getCron from "../utils/get-cron-syntax.js"; 
 import getLineup from "../utils/get-lineup-string.js";
 import getKickoffString from "../utils/get-kickoff-string.js";
 
-export const scheduledFixture = []; 
+export const scheduledFixture = [];
+export const liveFixtures = [];
 
 // Local reference to the jobs array passed from the entrypoint
 let jobsQueue = [];
 
 export async function scheduleFixturesForToday(jobs) {
-    if (jobs) {
-        jobsQueue = jobs;
-    }
-    try {
-        const fixtures = await fetchTodayFixtures();
-        const todayFixtures = filterMenFixtures(fixtures);
+  if (jobs) {
+    jobsQueue = jobs;
+  }
+
+  const date = new Date().toISOString().split("T")[0];
+  const { data, error } = await supabase
+    .from("fixtures")
+    .select("*")
+    .eq("date", date);
+
+  scheduledFixture.length = 0;
+
+  if (error) {
+      console.log("[ERROR] > Fetching Today's Fixtures")
+      console.log(error);
+      return;
+  }
+
+   if (data?.length > 0) {
+     console.log(`[RECOVERY] Found ${data.length} fixtures already saved in Supabase`);
+  }
+
+  if (!data || data.length === 0) {
+    console.log("[SUPABASE EMPTY] > FETCHING API-SPORTS...");
+
+    const fixtures = await fetchTodayFixtures();
+    const todayFixtures = filterMenFixtures(fixtures);
         
-        console.log(`Today's fixtures: ${fixtures.length}, Matched: ${todayFixtures.length}`);
+    console.log(`Today's fixtures: ${fixtures.length}, Matched: ${todayFixtures.length}`);
 
-        // Clear existing schedules for the new run
-        scheduledFixture.length = 0;
+    // Clear existing schedules for the new run
+    for (const f of todayFixtures) {
+      scheduledFixture.push({
+        fixtureId: f.fixture.id,
+        homeTeam: f.teams.home.name,
+        awayTeam: f.teams.away.name,
+        kickOffTime: f.fixture.date,
+        lineUpTime: getLineupTime(f.fixture.date),
+      });
 
-        for (const f of todayFixtures) {
-          scheduledFixture.push({
-            fixtureId: f.fixture.id,
-            homeTeam: f.teams.home.name,
-            awayTeam: f.teams.away.name,
-            kickOffTime: f.fixture.date,
-            lineUpTime: getLineupTime(f.fixture.date),
-          });
+      console.log("Pushing Today's Fixtures to Supabase");
 
-          await insertToSupabase({
-            fixture_id: f.fixture.id,
-            home_team: f.teams.home.name,
-            away_team: f.teams.away.name,
-            kickoff_time: f.fixture.date,
-            lineup_time: getLineupTime(f.fixture.date),
-          });
-        };
+      await insertToSupabase({
+        fixture_id: f.fixture.id,
+        home_team: f.teams.home.name,
+        away_team: f.teams.away.name,
+        kickoff_time: f.fixture.date,
+        lineup_time: getLineupTime(f.fixture.date),
+        status: "scheduled",
+        date: date
+      });
+      console.log("[SUPABASE] - INSERTED & SAVED TODAY'S FIXTURES");
+    };
+  } else {
+      scheduledFixture.push(
+        ...data.map(row => ({
+          fixtureId: row.fixture_id,
+          homeTeam: row.home_team,
+          awayTeam: row.away_team,
+          kickOffTime: row.kickoff_time,
+          lineUpTime: row.lineup_time,
+          status: Date.now() >= new Date(row.kickoff_time).getTime() ? "live" : row.status,
+          date: row.date
+        }))
+      );
 
-        console.log("Scheduled fixtures:", scheduledFixture);
+      console.log(`[RECOVERY] Scheduled ${scheduledFixture.length} fixtures from Supabase`);
+  }
 
-        // Start creating Queues
-        scheduledFixture.forEach(f => {
-            // Create kick off cron job
-            const job = cron.schedule(getCron(f.kickOffTime), () => {
-                try {
-                    const post = getKickoffString(f);
-                    jobsQueue.push(post);
-                    console.log("[Kickoff Queue]: ", f.homeTeam, "vs", f.awayTeam, "Queue size:", jobsQueue.length);
-                } catch (err) {
-                    console.log("job to post kickoff: " + f.homeTeam + " vs " + f.awayTeam + " failed");
-                    return;
-                } finally {
-                    job.stop();
-                    job.destroy();
-                    console.log("job for kickoff: " + f.homeTeam + " vs " + f.awayTeam + " destroyed");
-                }        
-            });
+  liveFixtures.length = 0;
 
-            // Create lineup cron job 
-            const ljob = cron.schedule(getCron(f.lineUpTime), async () => {
-                try {
-                    const post = await postLineup(f);
-                    if (post) {
-                        jobsQueue.push(post);
-                        console.log("[Lineup Queued]: ", f.homeTeam, "vs", f.awayTeam, "Queue size:", jobsQueue.length);
-                    }
-                } catch (err) {
-                    console.log("job to post lineup: " + f.homeTeam + " vs " + f.awayTeam + " failed");
-                    return;
-                } finally {
-                    ljob.stop();
-                    ljob.destroy();
-                    console.log("job for lineup: " + f.homeTeam + " vs " + f.awayTeam + " destroyed");
-                }        
-            });
-        });
-    } catch (err) {
-        console.error("Error scheduling today's fixtures:", err);
-    }
+  liveFixtures.push(
+    ...scheduledFixture.filter(d => d.status === "live"));
+
+  console.log("Scheduled fixtures:", scheduledFixture);
+  console.log("[LIVE MATCHES]", liveFixtures.map(m => `${m.homeTeam} vs ${m.awayTeam}`));
+
+  // Start creating Queues
+  scheduledFixture.forEach(f => {
+    // Create kick off cron job
+    const job = cron.schedule(getCron(f.kickOffTime), () => {
+      try {
+        const post = getKickoffString(f);
+        jobsQueue.push(post);
+        
+        console.log("[Kickoff Queue]: ", f.homeTeam, "vs", f.awayTeam, "Queue size:", jobsQueue.length);
+      } catch (err) {
+          console.log("job to post kickoff: " + f.homeTeam + " vs " + f.awayTeam + " failed");
+          return;
+      } finally {
+          job.stop();
+          job.destroy();
+          console.log("job for kickoff: " + f.homeTeam + " vs " + f.awayTeam + " destroyed");
+      }
+    });
+
+    // Create lineup cron job 
+    const ljob = cron.schedule(getCron(f.lineUpTime), async () => {
+      try {
+        const post = await postLineup(f);
+        if (post) {
+          jobsQueue.push(post);
+          console.log("[Lineup Queued]: ", f.homeTeam, "vs", f.awayTeam, "Queue size:", jobsQueue.length);
+        }
+      } catch (err) {
+         console.log("job to post lineup: " + f.homeTeam + " vs " + f.awayTeam + " failed");
+         return;
+      } finally {
+        ljob.stop();
+        ljob.destroy();
+        console.log("job for lineup: " + f.homeTeam + " vs " + f.awayTeam + " destroyed");
+      }
+    });
+  });
+
+  console.log("[SUCCESS] - Cron jobs are scheduled", "Hopeful Server doesn't Sleep or Crash");
 }
 
 async function postLineup(fixture) {
