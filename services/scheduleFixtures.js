@@ -19,143 +19,168 @@ export async function scheduleFixturesForToday(jobs) {
     jobsQueue = jobs;
   }
 
-  const date = new Date().toISOString().split("T")[0];
-  const { data, error } = await supabase
-    .from("fixtures")
-    .select("*")
-    .eq("date", date);
+  try {
+    const date = new Date().toISOString().split("T")[0];
+    const { data, error } = await supabase
+      .from("fixtures")
+      .select("*")
+      .eq("date", date);
 
-  scheduledFixture.length = 0;
+    scheduledFixture.length = 0;
 
-  if (error) {
+    if (error) {
       console.log("[ERROR] > Fetching Today's Fixtures")
       console.log(error);
       return;
-  }
+    }
 
-   if (data?.length > 0) {
-     console.log(`[RECOVERY] Found ${data.length} fixtures already saved in Supabase`);
-  }
+    if (data?.length > 0) {
+      console.log(`[RECOVERY] Found ${data.length} fixtures already saved in Supabase`);
+    }
 
-  if (!data || data.length === 0) {
-    console.log("[SUPABASE EMPTY] > FETCHING API-SPORTS...");
+    if (!data || data.length === 0) {
+      console.log("[SUPABASE EMPTY] > FETCHING API-SPORTS...");
 
-    const fixtures = await fetchTodayFixtures();
-    const todayFixtures = filterMenFixtures(fixtures);
-        
-    console.log(`Today's fixtures: ${fixtures.length}, Matched: ${todayFixtures.length}`);
+      const fixtures = await fetchTodayFixtures();
+      const todayFixtures = filterMenFixtures(fixtures);
+          
+      console.log(`Today's fixtures: ${fixtures.length}, Matched: ${todayFixtures.length}`);
 
-    // Clear existing schedules for the new run
-    for (const f of todayFixtures) {
-      scheduledFixture.push({
-        fixtureId: f.fixture.id,
-        homeTeam: f.teams.home.name,
-        awayTeam: f.teams.away.name,
-        kickOffTime: f.fixture.date,
-        lineUpTime: getLineupTime(f.fixture.date),
-      });
+      // Clear existing schedules for the new run
+      for (const f of todayFixtures) {
+        scheduledFixture.push({
+          fixtureId: f.fixture.id,
+          homeTeam: f.teams.home.name,
+          awayTeam: f.teams.away.name,
+          kickOffTime: f.fixture.date,
+          lineUpTime: getLineupTime(f.fixture.date),
+        });
 
-      console.log("Pushing Today's Fixtures to Supabase");
+        console.log("Pushing Today's Fixtures to Supabase");
 
-      await insertToSupabase({
-        fixture_id: f.fixture.id,
-        home_team: f.teams.home.name,
-        away_team: f.teams.away.name,
-        kickoff_time: f.fixture.date,
-        lineup_time: getLineupTime(f.fixture.date),
-        status: "scheduled",
-        date: date
-      });
-      console.log("[SUPABASE] - INSERTED & SAVED TODAY'S FIXTURES");
-    };
-  } else {
-      scheduledFixture.push(
-        ...data.map(row => ({
-          fixtureId: row.fixture_id,
-          homeTeam: row.home_team,
-          awayTeam: row.away_team,
-          kickOffTime: row.kickoff_time,
-          lineUpTime: row.lineup_time,
-          status: Date.now() >= new Date(row.kickoff_time).getTime() ? "live" : row.status,
-          date: row.date
-        }))
-      );
+        await insertToSupabase({
+          fixture_id: f.fixture.id,
+          home_team: f.teams.home.name,
+          away_team: f.teams.away.name,
+          kickoff_time: f.fixture.date,
+          lineup_time: getLineupTime(f.fixture.date),
+          status: "scheduled",
+          date: date
+        });
+        console.log("[SUPABASE] - INSERTED & SAVED TODAY'S FIXTURES");
+      };
+    } else {
+        scheduledFixture.push(
+          ...data.map(row => ({
+            fixtureId: row.fixture_id,
+            homeTeam: row.home_team,
+            awayTeam: row.away_team,
+            kickOffTime: row.kickoff_time,
+            lineUpTime: row.lineup_time,
+            status: Date.now() >= new Date(row.kickoff_time).getTime() ? "live" : row.status,
+            date: row.date
+          }))
+        );
 
-      console.log(`[RECOVERY] Scheduled ${scheduledFixture.length} fixtures from Supabase`);
-  }
+        console.log(`[RECOVERY] Scheduled ${scheduledFixture.length} fixtures from Supabase`);
+    }
 
-  liveFixtures.length = 0;
+    liveFixtures.length = 0;
 
-  liveFixtures.push(
-    ...scheduledFixture.filter(d => d.status === "live"));
+    liveFixtures.push(...scheduledFixture.filter(match => match.status === "live"));
 
-  console.log("Scheduled fixtures:", scheduledFixture);
-  console.log("[LIVE MATCHES]", liveFixtures.map(m => `${m.homeTeam} vs ${m.awayTeam}`));
+    console.log("Scheduled fixtures:", scheduledFixture);
+    console.log("[LIVE FIXTURES]: ", liveFixtures.map(f => f.homeTeam + " - " + f.awayTeam));
 
-  // Start creating Queues
-  scheduledFixture.forEach(f => {
-    // Create kick off cron job
-    const job = cron.schedule(getCron(f.kickOffTime), () => {
-      try {
-        const post = getKickoffString(f);
-        jobsQueue.push(post);
-        
-        console.log("[Kickoff Queue]: ", f.homeTeam, "vs", f.awayTeam, "Queue size:", jobsQueue.length);
-      } catch (err) {
+    // Start creating Queues
+    scheduledFixture.forEach(f => {
+
+      // Create kick off cron job
+      const job = cron.schedule(getCron(f.kickOffTime), () => {
+        try {
+          const post = getKickoffString(f);
+          jobsQueue.push(post);
+          
+          console.log("[Kickoff Queue]: ", f.homeTeam, "vs", f.awayTeam, "Queue size:", jobsQueue.length);
+        } catch (err) {
           console.log("job to post kickoff: " + f.homeTeam + " vs " + f.awayTeam + " failed");
           return;
-      } finally {
+        } finally {
           job.stop();
-          job.destroy();
+          job.destroy(); 
+          liveFixtures.push(f);
           console.log("job for kickoff: " + f.homeTeam + " vs " + f.awayTeam + " destroyed");
-      }
-    });
-
-    // Create lineup cron job 
-    const ljob = cron.schedule(getCron(f.lineUpTime), async () => {
-      try {
-        const post = await postLineup(f);
-        if (post) {
-          jobsQueue.push(post);
-          console.log("[Lineup Queued]: ", f.homeTeam, "vs", f.awayTeam, "Queue size:", jobsQueue.length);
         }
-      } catch (err) {
-         console.log("job to post lineup: " + f.homeTeam + " vs " + f.awayTeam + " failed");
-         return;
-      } finally {
-        ljob.stop();
-        ljob.destroy();
-        console.log("job for lineup: " + f.homeTeam + " vs " + f.awayTeam + " destroyed");
-      }
-    });
-  });
+      });
 
-  console.log("[SUCCESS] - Cron jobs are scheduled", "Hopeful Server doesn't Sleep or Crash");
+      // Create lineup cron job 
+      const ljob = cron.schedule(getCron(f.lineUpTime), async () => {
+        try {
+          const post = await postLineup(f);
+          if (post) {
+            jobsQueue.push(post);
+            console.log("[Lineup Queued]: ", f.homeTeam, "vs", f.awayTeam, "Queue size:", jobsQueue.length);
+          }
+        } catch (err) {
+          console.log("job to post lineup: " + f.homeTeam + " vs " + f.awayTeam + " failed");
+          return;
+        } finally {
+          ljob.stop();
+          ljob.destroy();
+          console.log("job for lineup: " + f.homeTeam + " vs " + f.awayTeam + " destroyed");
+        }
+      });
+    });
+
+  } catch (error) {
+    console.log("[ERROR]: ISSUE GETING SCHEDULED FIXTURES IN SUPABASE");
+    console.log(error);
+  }
+  console.log("[SUCCESS] - Cron jobs are scheduled", "Hope Server doesn't Sleep or Crash");
 }
 
+
+// INDEPENDENT CRON-JOB TO FIXTURES
 async function postLineup(fixture) {
-    try {
-        const URL = `https://v3.football.api-sports.io/fixtures/lineups?fixture=${fixture.fixtureId}`;
-        const PARAMS = {
-            headers: {
-                "x-apisports-key": process.env.API_SPORT_KEY,
-            }
-        };
-        const response = await axios.get(URL, PARAMS);
-        console.log("Gotten Line-up for: " + fixture.homeTeam + " vs " + fixture.awayTeam);
-        
-        const lineups = response.data.response;
-        if (!lineups || lineups.length < 2) {
-            console.log("Lineup not ready yet for " + fixture.homeTeam + " vs " + fixture.awayTeam + " atleast not both teams.");
-            // Return 
-            return null;
-        }
-        
-        console.log("Line-ups for " + fixture.homeTeam + " vs " + fixture.awayTeam + " gotten");
-        return getLineup(lineups);
-
-    } catch (err) {
-        console.log("Failed to fetch Lineup: " + err.message);
-        return null;
+  try {
+    const URL = `https://v3.football.api-sports.io/fixtures/lineups?fixture=${fixture.fixtureId}`;
+    const PARAMS = {
+      headers: {
+        "x-apisports-key": process.env.API_SPORT_KEY,
+      }
+    };
+    const response = await axios.get(URL, PARAMS);
+    console.log("Gotten Line-up for: " + fixture.homeTeam + " vs " + fixture.awayTeam);
+    
+    const lineups = response.data.response;
+    if (!lineups || lineups.length < 2) {
+      console.log("Lineup not ready yet for " + fixture.homeTeam + " vs " + fixture.awayTeam + " atleast not both teams.");
+      // Return 
+      return null;
     }
+    
+    console.log("Line-ups for " + fixture.homeTeam + " vs " + fixture.awayTeam + " gotten");
+    return getLineup(lineups);
+
+  } catch (err) {
+    console.log("Failed to fetch Lineup: " + err.message);
+    return null;
+  }
 }
+
+cron.schedule("0 */10 * * * *", async () => {
+  for (const fixture of liveFixtures) {
+    try {
+      const URL = `https://v3.football.api-sports.io/fixtures/events?fixture=${fixture.fixtureId}`;
+      const PARAMS = {
+        headers: {
+          "x-apisports-key": process.env.API_SPORT_KEY,
+        }
+      };
+      const res = await axios.get(URL, PARAMS);
+      const response = res.data.response.filter(match => match.events.length > 0);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+})
