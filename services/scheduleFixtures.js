@@ -24,7 +24,7 @@ export async function scheduleFixturesForToday(jobs) {
     const { data, error } = await supabase
       .from("fixtures")
       .select("*")
-      .eq("date", "" + today + "");
+      
 
     scheduledFixture.length = 0;
 
