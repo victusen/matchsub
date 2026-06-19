@@ -2,7 +2,7 @@ import axios from "axios";
 
 export async function fetchTodayFixtures() {
     const today = new Date().toISOString().split("T")[0];
-    console.log(today);
+    console.log("Today is " + today);
     
     const URL = `https://v3.football.api-sports.io/fixtures?date=${today}`;
 
