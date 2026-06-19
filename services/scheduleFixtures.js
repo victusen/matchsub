@@ -20,22 +20,18 @@ export async function scheduleFixturesForToday(jobs) {
   }
 
   try {
-    const date = new Date().toISOString().split("T")[0];
+    const today = new Date().toISOString().split("T")[0];
     const { data, error } = await supabase
       .from("fixtures")
       .select("*")
-      .eq("date", date);
+      .eq("date", "" + today + "");
 
     scheduledFixture.length = 0;
 
     if (error) {
-      console.log("[ERROR] > Fetching Today's Fixtures")
+      console.log("Error Fetching Today's Fixtures")
       console.log(error);
       return;
-    }
-
-    if (data?.length > 0) {
-      console.log(`[RECOVERY] Found ${data.length} fixtures already saved in Supabase`);
     }
 
     if (!data || data.length === 0) {
@@ -56,8 +52,6 @@ export async function scheduleFixturesForToday(jobs) {
           lineUpTime: getLineupTime(f.fixture.date),
         });
 
-        console.log("Pushing Today's Fixtures to Supabase");
-
         await insertToSupabase({
           fixture_id: f.fixture.id,
           home_team: f.teams.home.name,
@@ -65,9 +59,9 @@ export async function scheduleFixturesForToday(jobs) {
           kickoff_time: f.fixture.date,
           lineup_time: getLineupTime(f.fixture.date),
           status: "scheduled",
-          date: date
+          date: today
         });
-        console.log("[SUPABASE] - INSERTED & SAVED TODAY'S FIXTURES");
+        console.log("SAVED TODAY'S FIXTURES YO SUPABASE");
       };
     } else {
         scheduledFixture.push(
@@ -83,6 +77,12 @@ export async function scheduleFixturesForToday(jobs) {
         );
 
         console.log(`[RECOVERY] Scheduled ${scheduledFixture.length} fixtures from Supabase`);
+    }
+
+    if (data?.length > 0) {
+      console.log(`[RECOVERY] Found ${data.length} fixtures already saved in Supabase`);
+     
+      // For code to check new live games and update Supabase 
     }
 
     liveFixtures.length = 0;
