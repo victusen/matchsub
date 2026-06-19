@@ -7,7 +7,7 @@ const Key = process.env.SUPABASE_ANON_KEY;
 
 export const supabase = createClient(Url, Key);
 
-export default async function insertToSupabase({fixture_id, home_team, away_team, kickoff_time, lineup_time }) {
+export async function insertToSupabase({fixture_id, home_team, away_team, kickoff_time, lineup_time }) {
     try {
         const { data, error } = await supabase
             .from("fixtures")
