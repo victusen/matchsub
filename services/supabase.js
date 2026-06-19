@@ -23,8 +23,8 @@ export async function insertToSupabase({fixture_id, home_team, away_team, kickof
 
         console.log("Fixture saved:", home_team, "vs", away_team, "id: " + fixture_id);
 
-        if (err) {
-            console.log("Supabase Error:", err);
+        if (error) {
+            console.log("Supabase Error:", error);
             return;
         }
     } catch (error) {
