@@ -50,6 +50,8 @@ export async function scheduleFixturesForToday(jobs) {
           awayTeam: f.teams.away.name,
           kickOffTime: f.fixture.date,
           lineUpTime: getLineupTime(f.fixture.date),
+          status: Date.now() >= new Date(f.fixture.date).getTime() ? "live" : "scheduled",
+          date: today
         });
 
         await insertToSupabase({
@@ -58,10 +60,10 @@ export async function scheduleFixturesForToday(jobs) {
           away_team: f.teams.away.name,
           kickoff_time: f.fixture.date,
           lineup_time: getLineupTime(f.fixture.date),
-          status: "scheduled",
+          status: Date.now() >= new Date(f.fixture.date).getTime() ? "live" : "scheduled",
           date: today
         });
-        console.log("SAVED TODAY'S FIXTURES YO SUPABASE");
+        console.log("SAVED TO SUPABASE");
       };
     } else {
         scheduledFixture.push(
@@ -89,7 +91,8 @@ export async function scheduleFixturesForToday(jobs) {
 
     liveFixtures.push(...scheduledFixture.filter(match => match.status === "live"));
 
-    console.log("Scheduled fixtures:", scheduledFixture);
+    console.log("Scheduled fixtures:", scheduledFixture.length);
+
     console.log("[LIVE FIXTURES]: ", liveFixtures.map(f => f.homeTeam + " - " + f.awayTeam));
 
     // Start creating Queues
