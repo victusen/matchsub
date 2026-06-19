@@ -50,7 +50,7 @@ export async function scheduleFixturesForToday(jobs) {
           awayTeam: f.teams.away.name,
           kickOffTime: f.fixture.date,
           lineUpTime: getLineupTime(f.fixture.date),
-          status: Date.now() >= (new Date(f.fixture.date).getTime() + (2 * 60 * 60 * 1000)) ? "finished" : Date.now() >= new Date(row.kickoff_time).getTime() ? "live" : "scheduled",
+          status: Date.now() >= (new Date(f.fixture.date).getTime() + (2 * 60 * 60 * 1000)) ? "finished" : Date.now() >= new Date(f.fixture.date).getTime() ? "live" : "scheduled",
           date: today
         });
 
@@ -96,7 +96,9 @@ export async function scheduleFixturesForToday(jobs) {
     console.log("[LIVE FIXTURES]: ", liveFixtures.map(f => f.homeTeam + " - " + f.awayTeam));
 
     // Start creating Queues
-    scheduledFixture.forEach(f => {
+    scheduledFixture
+    .filter(f => f.status !== "finished")
+    .forEach(f => {
 
       // Create kick off cron job
       const job = cron.schedule(getCron(f.kickOffTime), () => {
@@ -111,7 +113,7 @@ export async function scheduleFixturesForToday(jobs) {
         } finally {
           job.stop();
           job.destroy(); 
-          liveFixtures.push(f);
+          if (!liveFixtures.find(x => x.fixtureId === f.fixtureId)) { liveFixtures.push(f) };
           console.log("job for kickoff: " + f.homeTeam + " vs " + f.awayTeam + " destroyed");
         }
       });
@@ -136,7 +138,7 @@ export async function scheduleFixturesForToday(jobs) {
     });
 
   } catch (error) {
-    console.log("[ERROR]: ISSUE GETING SCHEDULED FIXTURES IN SUPABASE");
+    console.log("[ERROR]: ISSUE GETTING SCHEDULED FIXTURES IN SUPABASE");
     console.log(error);
   }
   console.log("[SUCCESS] - Cron jobs are scheduled", "Hope Server doesn't Sleep or Crash");
@@ -173,6 +175,12 @@ async function postLineup(fixture) {
 
 cron.schedule("0 */10 * * * *", async () => {
   for (const fixture of liveFixtures) {
+    if (Date.now() >= (new Date(fixture.kickOffTime).getTime() + (2 * 60 * 60 * 1000))) {
+      console.log("This live fixture Is above Live actions", "Pulling away from Live");
+      const index = liveFixtures.indexOf(fixture);
+      if (index !== -1) { liveFixtures.splice(index, 1) }
+      continue;
+    };
     try {
       const URL = `https://v3.football.api-sports.io/fixtures/events?fixture=${fixture.fixtureId}`;
       const PARAMS = {
@@ -180,8 +188,9 @@ cron.schedule("0 */10 * * * *", async () => {
           "x-apisports-key": process.env.API_SPORT_KEY,
         }
       };
-      const res = await axios.get(URL, PARAMS);
-      const response = res.data.response.filter(match => match.events.length > 0);
+      const res = await axios.get(URL, PARAMS); 
+      console.log(res.data.response);
+      // const response = res.data.response.filter(match => match.events.length > 0);
     } catch (err) {
       console.log(err);
     }
