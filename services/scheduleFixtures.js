@@ -50,7 +50,7 @@ export async function scheduleFixturesForToday(jobs) {
           awayTeam: f.teams.away.name,
           kickOffTime: f.fixture.date,
           lineUpTime: getLineupTime(f.fixture.date),
-          status: Date.now() >= new Date(f.fixture.date).getTime() ? "live" : "scheduled",
+          status: Date.now() >= (new Date(f.fixture.date).getTime() + (2 * 60 * 60 * 1000)) ? "finished" : Date.now() >= new Date(row.kickoff_time).getTime() ? "live" : "scheduled",
           date: today
         });
 
@@ -60,7 +60,7 @@ export async function scheduleFixturesForToday(jobs) {
           away_team: f.teams.away.name,
           kickoff_time: f.fixture.date,
           lineup_time: getLineupTime(f.fixture.date),
-          status: Date.now() >= new Date(f.fixture.date).getTime() ? "live" : "scheduled",
+          status: Date.now() >= (new Date(f.fixture.date).getTime() + (2 * 60 * 60 * 1000)) ? "finished" : Date.now() >= new Date(f.fixture.date).getTime() ? "live" : "scheduled",
           date: today
         });
         console.log("SAVED TO SUPABASE");
@@ -73,7 +73,7 @@ export async function scheduleFixturesForToday(jobs) {
             awayTeam: row.away_team,
             kickOffTime: row.kickoff_time,
             lineUpTime: row.lineup_time,
-            status: Date.now() >= new Date(row.kickoff_time).getTime() ? "live" : row.status,
+            status: Date.now() >= (new Date(row.kickoff_time).getTime() + (2 * 60 * 60 * 1000)) ? "finished" : Date.now() >= new Date(row.kickoff_time).getTime() ? "live" : "scheduled",
             date: row.date
           }))
         );
