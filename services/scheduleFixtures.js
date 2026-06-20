@@ -24,20 +24,21 @@ export async function scheduleFixturesForToday(jobs) {
     const { data, error } = await supabase
       .from("fixtures")
       .select("*")
-    console.log(today);
-    console.log(data[0]?.date);
+      .eq("date", today)
+    console.log("today is ", today);
+    // console.log(data[0]?.date);
     // console.log("Supabase data object, ", data)
 
     scheduledFixture.length = 0;
 
     if (error) {
-      console.log("Error Fetching Today's Fixtures")
+      console.log("Error Fetching from supabase")
       console.log(error);
       return;
     }
 
     if (!data || data.length === 0) {
-      console.log("[SUPABASE EMPTY] > FETCHING API-SPORTS...");
+      console.log("Supabase empty, defaulting to api-sports");
 
       const fixtures = await fetchTodayFixtures();
       const todayFixtures = filterMenFixtures(fixtures);
@@ -65,7 +66,7 @@ export async function scheduleFixturesForToday(jobs) {
           status: Date.now() >= (new Date(f.fixture.date).getTime() + (2 * 60 * 60 * 1000)) ? "finished" : Date.now() >= new Date(f.fixture.date).getTime() ? "live" : "scheduled",
           date: today
         });
-        console.log("SAVED TO SUPABASE");
+        console.log("ALL MATCHED FIXTURES SAVED TO SUPABASE");
       };
     } else {
         scheduledFixture.push(
@@ -140,10 +141,10 @@ export async function scheduleFixturesForToday(jobs) {
     });
 
   } catch (error) {
-    console.log("[ERROR]: ISSUE GETTING SCHEDULED FIXTURES IN SUPABASE");
+    console.log("[ERROR]: scheduleFixturesForToday failed");
     console.log(error);
   }
-  console.log("[SUCCESS] - Cron jobs are scheduled", "Hope Server doesn't Sleep or Crash");
+  console.log("[SUCCESS] - All cron jobs are scheduled", "Pray server don't crash 🔥");
 }
 
 
@@ -178,7 +179,7 @@ async function postLineup(fixture) {
 cron.schedule("0 */10 * * * *", async () => {
   for (const fixture of liveFixtures) {
     if (Date.now() >= (new Date(fixture.kickOffTime).getTime() + (2 * 60 * 60 * 1000))) {
-      console.log("This live fixture Is above Live actions", "Pulling away from Live");
+      console.log("This fixture Is above Live actions", "Pulling away from Live");
       const index = liveFixtures.indexOf(fixture);
       if (index !== -1) { liveFixtures.splice(index, 1) }
       continue;
