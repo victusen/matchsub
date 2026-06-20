@@ -46,7 +46,7 @@ export async function scheduleFixturesForToday(jobs) {
       console.log(`Today's fixtures: ${fixtures.length}, Matched: ${todayFixtures.length}`); 
 
       if (todayFixtures.length === 0) { 
-        console.log("No fixture today. Ending operation")
+        console.log("No fixture today. Ending it Here.")
         return;
       };
 
