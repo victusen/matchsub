@@ -97,6 +97,10 @@ export async function scheduleFixturesForToday(jobs) {
 
     liveFixtures.length = 0;
 
+    if (scheduledFixture.length === 0) {
+      console.log("No scheduled fixtures. Aborting.")
+      return;
+    }
     liveFixtures.push(...scheduledFixture.filter(match => match.status === "live"));
 
     console.log("Scheduled fixtures:", scheduledFixture.length);
@@ -181,7 +185,9 @@ async function postLineup(fixture) {
   }
 }
 
-cron.schedule("0 */10 * * * *", async () => {
+cron.schedule("0 */10 * * *", async () => {
+  if (liveFixtures.length === 0) { return };
+
   for (const fixture of liveFixtures) {
     if (Date.now() >= (new Date(fixture.kickOffTime).getTime() + (2 * 60 * 60 * 1000))) {
       console.log("This fixture Is above Live actions", "Pulling away from Live");
