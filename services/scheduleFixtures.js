@@ -66,8 +66,8 @@ export async function scheduleFixturesForToday(jobs) {
           status: Date.now() >= (new Date(f.fixture.date).getTime() + (2 * 60 * 60 * 1000)) ? "finished" : Date.now() >= new Date(f.fixture.date).getTime() ? "live" : "scheduled",
           date: today
         });
-        console.log("ALL MATCHED FIXTURES SAVED TO SUPABASE");
       };
+      console.log("ALL MATCHED FIXTURES SAVED TO SUPABASE");
     } else {
         scheduledFixture.push(
           ...data.map(row => ({
