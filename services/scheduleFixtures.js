@@ -24,7 +24,7 @@ export async function scheduleFixturesForToday(jobs) {
     const { data, error } = await supabase
       .from("fixtures")
       .select("*")
-    console.log("Supabase data object, "data)
+    console.log("Supabase data object, ", data)
 
     scheduledFixture.length = 0;
 
