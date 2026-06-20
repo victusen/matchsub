@@ -4,7 +4,7 @@ export async function fetchTodayFixtures() {
     const today = new Date().toISOString().split("T")[0];
     console.log("Today is " + today);
     
-    const URL = `https://v3.football.api-sports.io/fixtures?date=${today}`;
+    const URL = `https://v3.football.api-sports.io/fixtures?date=${today}&status=NS`;
 
     const PARAMS = {
         headers : {
