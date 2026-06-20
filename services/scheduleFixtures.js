@@ -43,7 +43,12 @@ export async function scheduleFixturesForToday(jobs) {
       const fixtures = await fetchTodayFixtures();
       const todayFixtures = filterMenFixtures(fixtures);
           
-      console.log(`Today's fixtures: ${fixtures.length}, Matched: ${todayFixtures.length}`);
+      console.log(`Today's fixtures: ${fixtures.length}, Matched: ${todayFixtures.length}`); 
+
+      if (todayFixtures.length === 0) { 
+        console.log("No fixture today. Ending operation")
+        return;
+      };
 
       // Clear existing schedules for the new run
       for (const f of todayFixtures) {
