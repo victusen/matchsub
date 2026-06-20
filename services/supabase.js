@@ -22,13 +22,11 @@ export async function insertToSupabase({fixture_id, home_team, away_team, kickof
                     "date": date
                 }
             ]);
-
-        console.log("Fixture saved:", home_team, "vs", away_team, "id: " + fixture_id);
-
         if (error) {
             console.log("Supabase Error:", error);
             return;
         }
+        console.log("All fixtures are inserted to Supabase");
     } catch (error) {
         console.log("Unexpected Error:", error);
     }
