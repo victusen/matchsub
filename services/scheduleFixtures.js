@@ -1,9 +1,10 @@
 import cron from "node-cron";
 import axios from "axios";
 import { fetchTodayFixtures } from "./footballServices.js";
-import { filterMenFixtures } from "../controller/filterMenFixture.js";
+import { filterMenFixtures, filterWatchedTeam } from "../controller/filterMenFixture.js";
 import { supabase, insertToSupabase } from "./supabase.js";
 import getLineupTime from "../utils/get-lineup-time.js";
+import prefName from "../utils/get-post-name.js"
 import getCron from "../utils/get-cron-syntax.js"; 
 import getLineup from "../utils/get-lineup-string.js";
 import getKickoffString from "../utils/get-kickoff-string.js";
@@ -18,6 +19,8 @@ export async function scheduleFixturesForToday(jobs) {
   if (jobs) {
     jobsQueue = jobs;
   }
+
+  const dt = Date.now();
 
   try {
     const today = new Date().toISOString().split("T")[0];
@@ -46,7 +49,7 @@ export async function scheduleFixturesForToday(jobs) {
       console.log(`Today's fixtures: ${fixtures.length}, Matched: ${todayFixtures.length}`); 
 
       if (todayFixtures.length === 0) { 
-        console.log("No fixture today. Ending it Here.")
+        console.log("No Fixture today. Try again tomorrow")
         return;
       };
 
@@ -58,7 +61,7 @@ export async function scheduleFixturesForToday(jobs) {
           awayTeam: f.teams.away.name,
           kickOffTime: f.fixture.date,
           lineUpTime: getLineupTime(f.fixture.date),
-          status: Date.now() >= (new Date(f.fixture.date).getTime() + (2 * 60 * 60 * 1000)) ? "finished" : Date.now() >= new Date(f.fixture.date).getTime() ? "live" : "scheduled",
+          status: dt >= (new Date(f.fixture.date).getTime() + (2 * 60 * 60 * 1000)) ? "finished" : dt >= new Date(f.fixture.date).getTime() ? "live" : "scheduled",
           date: today
         });
 
@@ -68,7 +71,7 @@ export async function scheduleFixturesForToday(jobs) {
           away_team: f.teams.away.name,
           kickoff_time: f.fixture.date,
           lineup_time: getLineupTime(f.fixture.date),
-          status: Date.now() >= (new Date(f.fixture.date).getTime() + (2 * 60 * 60 * 1000)) ? "finished" : Date.now() >= new Date(f.fixture.date).getTime() ? "live" : "scheduled",
+          status: dt >= (new Date(f.fixture.date).getTime() + (2 * 60 * 60 * 1000)) ? "finished" : dt >= new Date(f.fixture.date).getTime() ? "live" : "scheduled",
           date: today
         });
       };
@@ -81,7 +84,7 @@ export async function scheduleFixturesForToday(jobs) {
             awayTeam: row.away_team,
             kickOffTime: row.kickoff_time,
             lineUpTime: row.lineup_time,
-            status: Date.now() >= (new Date(row.kickoff_time).getTime() + (2 * 60 * 60 * 1000)) ? "finished" : Date.now() >= new Date(row.kickoff_time).getTime() ? "live" : "scheduled",
+            status: dt >= (new Date(row.kickoff_time).getTime() + (2 * 60 * 60 * 1000)) ? "finished" : dt >= new Date(row.kickoff_time).getTime() ? "live" : "scheduled",
             date: row.date
           }))
         );
@@ -98,14 +101,14 @@ export async function scheduleFixturesForToday(jobs) {
     liveFixtures.length = 0;
 
     if (scheduledFixture.length === 0) {
-      console.log("No scheduled fixtures. Aborting.")
+      console.log("No scheduled fixture. Aborting.")
       return;
     }
     liveFixtures.push(...scheduledFixture.filter(match => match.status === "live"));
 
     console.log("Scheduled fixtures:", scheduledFixture.length);
 
-    console.log("[LIVE FIXTURES]: ", liveFixtures.map(f => f.homeTeam + " - " + f.awayTeam));
+    console.log("LIVE FIXTURES: ", liveFixtures.map(f => f.homeTeam + " - " + f.awayTeam));
 
     // Start creating Queues
     scheduledFixture
@@ -148,16 +151,16 @@ export async function scheduleFixturesForToday(jobs) {
         }
       });
     });
+    console.log("[SUCCESS] - All cron jobs are scheduled. Pray server don't crash 🔥");
 
   } catch (error) {
     console.log("[ERROR]: scheduleFixturesForToday failed");
     console.log(error);
   }
-  console.log("[SUCCESS] - All cron jobs are scheduled", "Pray server don't crash 🔥");
 }
 
 
-// INDEPENDENT CRON-JOB TO FIXTURES
+// Function to fetch fixture lineups
 async function postLineup(fixture) {
   try {
     const URL = `https://v3.football.api-sports.io/fixtures/lineups?fixture=${fixture.fixtureId}`;
@@ -185,16 +188,29 @@ async function postLineup(fixture) {
   }
 }
 
-cron.schedule("0 */10 * * *", async () => {
+
+// Cron liveFixture events 
+cron.schedule("*/10 * * * *", async () => {
   if (liveFixtures.length === 0) { return };
 
   for (const fixture of liveFixtures) {
+    try {
+    // check to know if finished
     if (Date.now() >= (new Date(fixture.kickOffTime).getTime() + (2 * 60 * 60 * 1000))) {
-      console.log("This fixture Is above Live actions", "Pulling away from Live");
-      const index = liveFixtures.indexOf(fixture);
-      if (index !== -1) { liveFixtures.splice(index, 1) }
+      console.log(fixture.homeTeam + " - " + fixture.awayTeam + " is above live actions. Pulling away");
+      const index = liveFixtures.findIndex(f => f.fixtureId === fixture.fixtureId);
+
+      if (index !== -1) {liveFixtures.splice(index,1)};
+      
+      console.log("Spliced");
       continue;
     };
+
+    let events = [];
+
+    const watched = filterWatchedTeam(fixture);
+    if (!watched) { continue };
+    
     try {
       const URL = `https://v3.football.api-sports.io/fixtures/events?fixture=${fixture.fixtureId}`;
       const PARAMS = {
@@ -203,10 +219,176 @@ cron.schedule("0 */10 * * *", async () => {
         }
       };
       const res = await axios.get(URL, PARAMS); 
+      events = res.data.response;
       console.log(res.data.response);
-      // const response = res.data.response.filter(match => match.events.length > 0);
+      
+      if (!events.length) { continue };
     } catch (err) {
       console.log(err);
+      continue;
+    }
+    
+    const homeSubEvent = (watched === "home" || watched === "both") ? events.filter(event => 
+  event.type === "subst" && event.team.name === fixture.homeTeam) : [];
+    const awaySubEvent = (watched === "away" || watched === "both") ? events.filter(event => 
+  event.type === "subst" && event.team.name === fixture.awayTeam) : [];
+
+    const { home, away } = await getLastSubProcessed(fixture.fixtureId);
+
+    const newHomeSubEvent = homeSubEvent.slice(home);
+    const newAwaySubEvent = awaySubEvent.slice(away); 
+
+    const hPost = getSubsPostString(newHomeSubEvent, events, fixture, fixture.homeTeam)
+    const aPost = getSubsPostString(newAwaySubEvent, events, fixture, fixture.awayTeam)
+
+    for (const post of hPost) {
+      jobsQueue.push(post)
+    }
+    for (const post of aPost) {
+      jobsQueue.push(post)
+    }
+
+    if (newHomeSubEvent.length || newAwaySubEvent.length) {
+      await updateLastSubProcessed(fixture.fixtureId, {
+        home: home+newHomeSubEvent.length, 
+        away: away+newAwaySubEvent.length
+      })
+    }
+    } catch (err) {
+     console.log(`Failed processing fixture ${fixture.fixtureId}:`, err.message);
+     continue;
     }
   }
-})
+}) 
+
+
+// Helper utilies built-in
+async function getLastSubProcessed(fixtureId) {
+  const { data, error } = await supabase
+    .from("fixtures")
+    .select("last_sub_processed")
+    .eq("fixture_id", fixtureId)
+    .single();
+
+  if (error) {
+    console.error(`Failed to fetch last_subs_processed for ${fixtureId}:`, error.message);
+    return { home: 0, away: 0 };
+  }
+
+  if (data?.last_sub_processed) {
+    return data.last_sub_processed;
+  }
+
+  // Nothing there yet, initialize it
+  const initial = { home: 0, away: 0 };
+  await updateLastSubProcessed(fixtureId, initial);
+  return initial;
+}
+async function updateLastSubProcessed(fixtureId, updated) {
+  const { error } = await supabase
+    .from("fixtures")
+    .update({ last_sub_processed: updated })
+    .eq("fixture_id", fixtureId);
+
+  if (error) {
+    console.error(`Failed to update last_subs_processed for ${fixtureId}:`, error.message);
+  }
+}
+
+/* 
+function getCurrentScore(events, fixture) {
+  let home = 0;
+  let away = 0;
+
+  for (const e of events) {
+    if (e.type !== "Goal") continue;
+
+    if (e.team.name === fixture.homeTeam)
+      home++;
+    else if (e.team.name === fixture.awayTeam)
+      away++;
+  }
+
+  return { home, away };
+} 
+*/
+
+function getCurrentScoreUntil(events, fixture, minute) {
+
+  let home = 0;
+  let away = 0;
+
+  for (const e of events) {
+    if (e.type !== "Goal") continue;
+    
+    if (e.time.elapsed > minute) continue;
+
+    if (e.team.name === fixture.homeTeam)
+      home++;
+    else if (e.team.name === fixture.awayTeam)
+      away++;
+  }
+
+  return { home, away };
+}
+
+function getSubString(ev) {
+  let subStr = "";
+  if (Array.isArray(ev)) {
+    ev.forEach(e => {
+      subStr += `⬆️ Sub in: ${e.player?.name ?? ""} (${e.time.elapsed}\`) \n⬇️ Sub out: ${e.assist?.name ?? ""}\n\n`
+    })
+  }
+  return subStr;
+}; 
+
+function getSubsPostString(teamEvents, events, fixture, teamName) {
+  if (!teamEvents.length) return [];
+
+  const posts = [];
+
+  teamEvents.sort((a,b)=> {
+    return a.time.elapsed-b.time.elapsed
+  });
+
+  let i = 0;
+
+  while (i < teamEvents.length) {
+
+      const startMinute = teamEvents[i].time.elapsed;
+
+      const score = getCurrentScoreUntil(events, fixture, startMinute);
+
+      const group = [];
+
+      while (
+          i < teamEvents.length &&
+          teamEvents[i].time.elapsed <= startMinute + 1
+      ) {
+          group.push(teamEvents[i]);
+          i++;
+      }
+
+      const subs = getSubString(group);
+
+      const homeName =
+    teamName === fixture.homeTeam
+        ? `[${prefName(fixture.homeTeam)}]`
+        : prefName(fixture.homeTeam);
+
+      const awayName =
+    teamName === fixture.awayTeam
+        ? `[${prefName(fixture.awayTeam)}]`
+        : prefName(fixture.awayTeam);
+
+      posts.push(
+`🚩 Live: ${homeName} ${score.home}-${score.away} ${awayName}
+
+${subs}
+
+📲 Follow your favourite teams on @Player_Of_The_Match`
+      );
+  }
+
+  return posts;
+} 

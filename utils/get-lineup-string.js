@@ -14,8 +14,9 @@ export default function getLineup(arr) {
     const hT = arr[0];
     const aT = arr[1];
     
-    const hL = hT.startXI.map(formatPlayerName).join(", ");
-    const aL = aT.startXI.map(formatPlayerName).join(", ");
+    const hL = formatXI(hT)
+    const aL = formatXI(aT);
+  
     console.log(hL);
     console.log(aL);
     
@@ -24,7 +25,29 @@ export default function getLineup(arr) {
     console.log(hSub);
     console.log(aSub);
 
-    const post = hT.team.name + " XI: " + hL + "\n\n" + aT.team.name + " XI: " + aL + "\n\n" + "👕 Subs: " + hSub + "\n" + "👕 Subs: " + aSub;
-    console.log(post);
-    return post;
+    return hT.team.name + " XI: " + hL + "\n\n" + aT.team.name + " XI: " + aL + "\n\n" + "👕 Subs: " + hSub + "\n" + "👕 Subs: " + aSub;
 };
+
+function formatXI(team) {
+  if (!team.formation) {
+    return team.startXI.map(formatPlayerName).join(", ")}
+  
+  const formation = team.formation.split("-").map(Number);
+
+  formation.unshift(1); // goalkeeper
+
+  let index = 0;
+  const rows = [];
+
+  for (const count of formation) {
+    const players = team.startXI
+      .slice(index, index + count)
+      .map(formatPlayerName)
+      .join(", ");
+
+    rows.push(players);
+
+    index += count;
+  }
+  return rows.join("; ");
+}

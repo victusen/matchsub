@@ -1,10 +1,16 @@
 import axios from 'axios'
 
-const PAGE_ID = process.env.FACEBOOK_PAGE_ID;
-const PAGE_TOKEN = process.env.FACEBOOK_PAGE_TOKEN;
-
 export const postToFacebook = async (message, imageUrl = "") => {
+    const PAGE_ID = process.env.FACEBOOK_PAGE_ID;
+    const PAGE_TOKEN = process.env.FACEBOOK_PAGE_TOKEN;
+    
+    // console.log(process.env.FACEBOOK_PAGE_ID);
+    // console.log(process.env.FACEBOOK_PAGE_TOKEN);
+    // console.log(process.env.FACEBOOK_APP_ID);
+  
     try {
+        console.time("POSTED");
+        
         const url = `https://graph.facebook.com/v25.0/${PAGE_ID}/feed`;
 
         const data = {
@@ -15,7 +21,9 @@ export const postToFacebook = async (message, imageUrl = "") => {
 
         const res = await axios.post(url, data);
 
-        console.log("Post ID: " + res.data.id + "\n " + res);
+        console.log("Post ID: " + res.data.id);
+        console.timeEnd("POSTED");
+        
         return {
             success: true,
             postId: res.data.id,
