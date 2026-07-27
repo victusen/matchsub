@@ -15,6 +15,7 @@ export const liveFixtures = [];
 // Local reference to the jobs array passed from the entrypoint
 let jobsQueue = [];
 
+
 export async function scheduleFixturesForToday(jobs) {
   if (jobs) {
     jobsQueue = jobs;
@@ -92,12 +93,6 @@ export async function scheduleFixturesForToday(jobs) {
         console.log(`[RECOVERY] Scheduled ${scheduledFixture.length} fixtures from Supabase`);
     }
 
-    if (data?.length > 0) {
-      console.log(`[RECOVERY] Found ${data.length} fixtures already saved in Supabase`);
-     
-      // For code to check new live games and update Supabase 
-    }
-
     liveFixtures.length = 0;
 
     if (scheduledFixture.length === 0) {
@@ -151,14 +146,13 @@ export async function scheduleFixturesForToday(jobs) {
         }
       });
     });
-    console.log("[SUCCESS] - All cron jobs are scheduled. Pray server don't crash 🔥");
+    console.log("[SUCCESS] - All jobs are scheduled & ready.", "Pray server don't crash 🔥");
 
   } catch (error) {
     console.log("[ERROR]: scheduleFixturesForToday failed");
     console.log(error);
   }
 }
-
 
 // Function to fetch fixture lineups
 async function postLineup(fixture) {
@@ -227,13 +221,13 @@ cron.schedule("*/10 * * * *", async () => {
       console.log(err);
       continue;
     }
-    
+      
     const homeSubEvent = (watched === "home" || watched === "both") ? events.filter(event => 
   event.type === "subst" && event.team.name === fixture.homeTeam) : [];
     const awaySubEvent = (watched === "away" || watched === "both") ? events.filter(event => 
   event.type === "subst" && event.team.name === fixture.awayTeam) : [];
 
-    const { home, away } = await getLastSubProcessed(fixture.fixtureId);
+    const { home, away } = await getLastSubProcessed(fixture.fixtureId); 
 
     const newHomeSubEvent = homeSubEvent.slice(home);
     const newAwaySubEvent = awaySubEvent.slice(away); 
