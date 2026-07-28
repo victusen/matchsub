@@ -14,47 +14,48 @@ await scheduleFixturesForToday(jobs);
 
 // Schedule daily sync at 08:00 AM
 cron.schedule("0 8 * * *", async () => {
-    console.log("Daily sync: scheduling fixtures for the new day...");
+    console.log("Daily sync: Loading... today fixtures for the new day");
     await scheduleFixturesForToday(jobs);
 }, {timezone: "Africa/Lagos"});
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
-}
+};
 
 cron.schedule("* * * * *", async () => {
-    if (jobs.length === 0) return;
+  if (jobs.length === 0) return;
 
-    const jobsToProcess = jobs.splice(0);
-
-    let i = 1;
-    for (const job of jobsToProcess) {
-        console.log(`[QUEUED:] JOB${i}`);
-
-        await postToFacebook(job); 
+  console.log(jobs.length, " posts queued this minute");
   
-        await sleep(15000);
+  const jobsToProcess = jobs.splice(0);
 
-        i++;
-    };
+  let i = 1;
+  for (const job of jobsToProcess) {
+    console.log(`[QUEUED:] JOB${i}`);
+
+    await postToFacebook(job); 
+
+    await sleep(15000);
+
+    i++;
+  };
 });
 
-// Health-check server for Render (free web service tier requires HTTP)
+// Check Render's server health (free web service tier requires HTTP)
 const PORT = process.env.PORT || 3000;
 http.createServer((req, res) => {
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({
         status: "running",
+        uptime: process.uptime().toFixed(0) + "s",
         todayFixtures: scheduledFixture.length + " games: " + scheduledFixture.map(f => `${f.homeTeam} - ${f.awayTeam}`).join(", "),
-        live: liveFixtures.length + " games: " + scheduledFixture.map(f => `${f.homeTeam} - ${f.awayTeam}`).join(", "),
-        uptime: process.uptime().toFixed(0) + "s"
+        live: liveFixtures.length + " games live: " + liveFixtures.map(f => `${f.homeTeam} - ${f.awayTeam}`).join(", ")
     }, null, 2));
 }).listen(PORT, () => { console.log(`Server running on port ${PORT}`); })
 
 function generateNumber(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
+};
 async function pingAlways() {
   const randomDelay = generateNumber(360000, 660000);
 
@@ -67,11 +68,11 @@ async function pingAlways() {
       console.log(`Server responded with ${res.status}`);
     }
   } catch (err) {
-    console.log("[DOWN]: Server is down\n", err.message, "\n");
+    console.log("Server is down\n", err.message, "\n");
   }
 
   console.log("pinging in: " + randomDelay/(1000 * 60) + "mins");
     
   setTimeout(() => pingAlways(), randomDelay);
-}
+};
 pingAlways();
