@@ -43,7 +43,7 @@ export async function scheduleFixturesForToday(jobs) {
     }
 
     if (!data || data.length === 0) {
-      console.log("Supabase is empty, checking api-sports now");
+      console.log("Supabase is empty, using api-sports");
 
       const fixtures = await fetchTodayFixtures();
       const todayFixtures = filterMenFixtures(fixtures);
@@ -393,4 +393,4 @@ ${subs}
   }
 
   return posts;
-} 
+};

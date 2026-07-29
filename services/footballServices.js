@@ -16,6 +16,11 @@ export async function fetchTodayFixtures() {
         const response = await axios.get(URL, PARAMS);
         const fixtures = response.data.response;
         console.log(response.data.errors);
+
+      if (!fixtures.length) {
+        console.log("API fixtures return empty.")
+        return [];
+      }
         
         console.log("Fixtures:", fixtures.length);
         return fixtures;
