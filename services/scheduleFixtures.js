@@ -32,7 +32,7 @@ export async function scheduleFixturesForToday(jobs) {
       .from("fixtures")
       .select("*")
       .eq("date", today)
-    console.log("today is ", today);
+    console.log("Today is ", today);
   
     scheduledFixture.length = 0;
 
@@ -43,7 +43,7 @@ export async function scheduleFixturesForToday(jobs) {
     }
 
     if (!data || data.length === 0) {
-      console.log("Supabase is empty, using api-sports");
+      console.log("Supabase is empty, fetching api-sports");
 
       const fixtures = await fetchTodayFixtures();
       const todayFixtures = filterMenFixtures(fixtures);
@@ -51,7 +51,7 @@ export async function scheduleFixturesForToday(jobs) {
       console.log(`Today's fixtures: ${fixtures.length}, Matched: ${todayFixtures.length}`); 
 
       if (todayFixtures.length === 0) { 
-        console.log("Oh! no interesting games tonight.")
+        console.log("No games today.")
         return;
       };
 
@@ -78,7 +78,7 @@ export async function scheduleFixturesForToday(jobs) {
           last_sub_processed: { home: 0, away: 0 }
         });
       };
-      console.log("All today fixtures are saved in Supabase.");
+      console.log("All matches today are saved in Supabase.");
     } else {
         scheduledFixture.push(
           ...data.map(row => ({
@@ -388,7 +388,7 @@ function getSubPostString(teamEvents, events, fixture, teamName) {
 
 ${subs}
 
-📲 Follow your favourite teams on @Player_Of_The_Match`
+Live top matches on player of the match`
       );
   }
 
