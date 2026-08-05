@@ -1,5 +1,4 @@
 // create the game lineup post
-import axios from "axios";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -17,13 +16,13 @@ export default function getLineup(arr) {
     const hL = formatXI(hT)
     const aL = formatXI(aT);
   
-    console.log(hL);
-    console.log(aL);
+    console.log("home: ", hL);
+    console.log("away: ", aL);
     
     const hSub = hT.substitutes.map(formatPlayerName).join(", ");
     const aSub = aT.substitutes.map(formatPlayerName).join(", ");
-    console.log(hSub);
-    console.log(aSub);
+    // console.log(hSub);
+    // console.log(aSub);
 
     return hT.team.name + " XI: " + hL + "\n\n" + aT.team.name + " XI: " + aL + "\n\n follow live on player of the match";
 };
@@ -32,7 +31,8 @@ export default function getLineup(arr) {
 
 function formatXI(team) {
   if (!team.formation) {
-    return team.startXI.map(formatPlayerName).join(", ")}
+    return team.startXI.map(formatPlayerName).join(", ")
+  }
   
   const formation = team.formation.split("-").map(Number);
 

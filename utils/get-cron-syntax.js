@@ -12,4 +12,4 @@ export default function getCron(utc) {
     return `${mins} ${hr} ${date} ${month} *`
 };
 
-// getCron("2026-06-08T13:00:00+00:00");
+console.log("Cron: ", getCron("2026-06-08T13:00Z"));

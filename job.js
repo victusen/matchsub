@@ -1,3 +1,4 @@
+import axios from "axios";
 import http from "http";
 import cron from "node-cron";
 import { postToFacebook } from "./controller/facebookController.js";
@@ -25,16 +26,14 @@ function sleep(ms) {
 cron.schedule("* * * * *", async () => {
   if (jobs.length === 0) return;
 
-  console.log(jobs.length, " posts queued this minute");
+  console.log(jobs.length, " posts queued in jobs, for posting");
   
   const jobsToProcess = jobs.splice(0);
 
   let i = 1;
   for (const job of jobsToProcess) {
     console.log(`[QUEUED:] JOB${i}`);
-
     await postToFacebook(job); 
-
     await sleep(15000);
 
     i++;
@@ -43,14 +42,35 @@ cron.schedule("* * * * *", async () => {
 
 // Check Render's server health (free web service tier requires HTTP)
 const PORT = process.env.PORT || 3000;
-http.createServer((req, res) => {
+http.createServer( async (req, res) => {
+
+  try {
+    const response = await axios.get("https://v3.football.api-sports.io/status", {headers: {"x-apisports-key": process.env.API_SPORT_KEY}});
+
+    const data = response.data.response; 
+
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({
-        status: "running",
-        uptime: process.uptime().toFixed(0) + "s",
-        todayFixtures: scheduledFixture.length + " games: " + scheduledFixture.map(f => `${f.homeTeam} - ${f.awayTeam}`).join(", "),
-        live: liveFixtures.length + " games live: " + liveFixtures.map(f => `${f.homeTeam} - ${f.awayTeam}`).join(", ")
+      uptime: process.uptime().toFixed(0) + "s",
+      status: "running",        
+      todayFixtures: scheduledFixture.length + " games: " + scheduledFixture.map(f => `${f.homeTeam} - ${f.awayTeam}`).join(", "),
+      live: liveFixtures.length + " games: " + liveFixtures.map(f => `${f.homeTeam} - ${f.awayTeam}`).join(", "),
+      jobs: jobs.length + " jobs in queue", 
+      "api-limit": data.requests.current + "/100"
     }, null, 2));
+  } catch (error) {
+    console.log("API limits check failed");
+    console.log(error);
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({
+      uptime: process.uptime().toFixed(0) + "s",
+      status: "running",        
+      todayFixtures: scheduledFixture.length + " games: " + scheduledFixture.map(f => `${f.homeTeam} - ${f.awayTeam}`).join(", "),
+      live: liveFixtures.length + " games: " + liveFixtures.map(f => `${f.homeTeam} - ${f.awayTeam}`).join(", "),
+      jobs: jobs.length + " jobs in queue", 
+      "api-limits-remaining": "Unknown"
+    }, null, 2));
+  }
 }).listen(PORT, () => { console.log(`Server running on port ${PORT}`); })
 
 function generateNumber(min, max) {

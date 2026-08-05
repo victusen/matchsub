@@ -80,6 +80,7 @@ export async function scheduleFixturesForToday(jobs) {
           last_sub_processed: { home: 0, away: 0 }
         });
       };
+      
       console.log("All matches today are saved in Supabase.");
     } else {
         scheduledFixture.push(
@@ -121,7 +122,7 @@ export async function scheduleFixturesForToday(jobs) {
           const post = getKickoffString(f);
           jobsQueue.push(post);
           
-          console.log("[Kickoff Queued]: ", f.homeTeam, "vs", f.awayTeam, "Queue size:", jobsQueue.length);
+          console.log(f.homeTeam, "vs", f.awayTeam, "kickoff post sent to queue. Qty:", jobsQueue.length, "IN QUEUE");
         } catch (err) {
           console.log("Kickoff: " + f.homeTeam + " vs " + f.awayTeam + " Failed.");
           return;
@@ -141,24 +142,24 @@ export async function scheduleFixturesForToday(jobs) {
           
           if (post) {
             jobsQueue.push(post);
-            console.log("[Queued]: ", f.homeTeam, "vs", f.awayTeam, "Queue size:", jobsQueue.length);
+            console.log(f.homeTeam, " - ", f.awayTeam, "lineup post sent to queue. Qty:", jobsQueue.length, "IN QUEUE");
           }
         } catch (err) {
-          console.log("Lineup: " + f.homeTeam + " vs " + f.awayTeam + " Failed.");
+          console.log("Lineup: " + f.homeTeam + " - " + f.awayTeam + " Failed.");
           return;
         } finally {
           ljob.stop();
           ljob.destroy();
-          // console.log("Lineup: " + f.homeTeam + " vs " + f.awayTeam + " Destroyed.");
+          console.log("Lineup: " + f.homeTeam + " - " + f.awayTeam + " Destroyed.");
         }
       });
       activeJobs.push(job, ljob);
     });
     
-    console.log("[SUCCESS]: Lineup & kickoffs scheduled", "Pray server don't crash 🔥");
+    console.log("Lineup/Kickoff schedules are set for today. Hope the server don't crash 🙌");
     
   } catch (error) {
-    console.log("[ERROR]: scheduleFixturesForToday failed");
+    console.log("scheduleFixturesForToday failed");
     console.log(error);
   }
 }
@@ -176,12 +177,11 @@ async function postLineup(fixture) {
     
     const lineups = response.data.response;
     if (!lineups || lineups.length < 2) {
-      console.log("Lineup for " + fixture.homeTeam + " vs " + fixture.awayTeam, "Not ready.");
-      // Return 
+      console.log(fixture.homeTeam + " - " + fixture.awayTeam, "line ups are not ready.");
       return null;
     }
     
-    console.log("Line-up for: " + fixture.homeTeam + " vs " + fixture.awayTeam + " ✅");
+    console.log("Lineup for " + fixture.homeTeam + " - " + fixture.awayTeam + " confirmed ✅!");
     return getLineup(lineups);
 
   } catch (err) {
@@ -198,14 +198,16 @@ cron.schedule("*/10 * * * *", async () => {
     try {
       // check to know if finished
       if (Date.now() >= (new Date(fixture.kickOffTime).getTime() + (2 * 60 * 60 * 1000))) {
-        console.log(fixture.homeTeam + " - " + fixture.awayTeam + " is above live actions. Pulling away");
+        console.log(fixture.homeTeam + " - " + fixture.awayTeam + " is above live actions. Pulling");
         const index = liveFixtures.findIndex(f => f.fixtureId === fixture.fixtureId);
   
         if (index !== -1) {liveFixtures.splice(index,1)};
         
-        console.log("Spliced");
+        console.log("Removed.");
         continue;
-      };
+      }
+
+      console.log(fixture.homeTeam + "-" + fixture.awayTeam, "is still live.")      
   
       let events = [];
   
@@ -221,7 +223,7 @@ cron.schedule("*/10 * * * *", async () => {
         };
         const res = await axios.get(URL, PARAMS); 
         events = res.data.response;
-        console.log(res.data.response);
+        console.log("Event res:", fixture.homeTeam +" - " + fixture.awayTeam, res.data.response);
         
         if (!events.length) { continue };
       } catch (err) {
@@ -284,6 +286,7 @@ async function getLastSubProcessed(fixtureId) {
   await updateLastSubProcessed(fixtureId, initial);
   return initial;
 };
+
 async function updateLastSubProcessed(fixtureId, updated) {
   const { error } = await supabase
     .from("fixtures")

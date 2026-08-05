@@ -12,10 +12,13 @@ export async function fetchTodayFixtures() {
         }
     };
 
+    console.log(URL, PARAMS);
+    
+
     try {
-        const response = await axios.get(URL, PARAMS);
+        // const response = await axios.get(URL, PARAMS);
         const fixtures = response.data.response;
-        console.log(response.data.errors);
+        console.log("API in fetching todayFixtures: ", response.data.errors);
 
       if (!fixtures.length) {
         console.log("API fixtures return empty.")
@@ -30,4 +33,4 @@ export async function fetchTodayFixtures() {
     }
 };
 
-// fetchTodayFixtures();
+fetchTodayFixtures(); 

@@ -1,8 +1,7 @@
 
 // To convert kick-off time to lineup time in UTC
-export default  function getLineupTime(kickOff) {
-    const d = new Date(new Date(kickOff) - 60*15*1000);
-
+export default function getLineupTime(kickOff) {
+    const d = new Date(new Date(kickOff) - 60 * 15 * 1000);
     return d.toISOString();
 };
 

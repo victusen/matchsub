@@ -9,7 +9,7 @@ export const postToFacebook = async (message, imageUrl = "") => {
     // console.log(process.env.FACEBOOK_APP_ID);
   
     try {
-        console.time("POSTED");
+        console.time("POSTED IN");
         
         const url = `https://graph.facebook.com/v25.0/${PAGE_ID}/feed`;
 
@@ -20,9 +20,8 @@ export const postToFacebook = async (message, imageUrl = "") => {
         }
 
         const res = await axios.post(url, data);
-
+        console.timeEnd("POSTED IN");
         console.log("Post ID: " + res.data.id);
-        console.timeEnd("POSTED");
         
         return {
             success: true,
