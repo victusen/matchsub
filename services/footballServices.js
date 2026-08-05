@@ -17,7 +17,7 @@ export async function fetchTodayFixtures() {
     try {
         const response = await axios.get(URL, PARAMS);
         const fixtures = response.data.response;
-        console.log("API in fetching todayFixtures: ", response.data.errors);
+        console.log("API ftching todayFixtures: ", response.data.errors);
 
       if (!fixtures.length) {
         console.log("API fixtures return empty.")

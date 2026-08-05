@@ -13,14 +13,13 @@ export const scheduledFixture = [];
 export const liveFixtures = [];
 let activeJobs = [];
 
-activeJobs.length = 0;
-
 // Local reference to the jobs array passed from the entrypoint
 let jobsQueue = [];
 
-
 export async function scheduleFixturesForToday(jobs) {
   activeJobs.forEach(j => { j.stop(); j.destroy(); });
+
+  activeJobs.length = 0;
   
   if (jobs) {
     jobsQueue = jobs;
@@ -30,6 +29,16 @@ export async function scheduleFixturesForToday(jobs) {
 
   try {
     const today = new Date().toISOString().split("T")[0];
+    const { error: deleteError } = await supabase
+      .from("fixtures")
+      .delete()
+      .lt("date", today);
+    
+    if (deleteError) {
+      console.log(deleteError.message);
+    }
+
+    console.log("Cleaning supabase on new fetch from any fixtures set. Done."); 
     const { data, error } = await supabase
       .from("fixtures")
       .select("*")
@@ -68,7 +77,6 @@ export async function scheduleFixturesForToday(jobs) {
           status: dt >= (new Date(f.fixture.date).getTime() + (2 * 60 * 60 * 1000)) ? "finished" : dt >= new Date(f.fixture.date).getTime() ? "live" : "scheduled",
           date: today
         });
-
         await insertToSupabase({
           fixture_id: f.fixture.id,
           home_team: f.teams.home.name,
@@ -83,20 +91,29 @@ export async function scheduleFixturesForToday(jobs) {
       
       console.log("All matches today are saved in Supabase.");
     } else {
-        scheduledFixture.push(
-          ...data.map(row => ({
-            fixtureId: row.fixture_id,
-            homeTeam: row.home_team,
-            awayTeam: row.away_team,
-            kickOffTime: row.kickoff_time,
-            lineUpTime: row.lineup_time,
-            status: dt >= (new Date(row.kickoff_time).getTime() + (2 * 60 * 60 * 1000)) ? "finished" : dt >= new Date(row.kickoff_time).getTime() ? "live" : "scheduled",
-            date: row.date
+      const activeFixtures = data.filter(row => {
+        const endTime = new Date(row.kickoff_time).getTime() + 2 * 60 * 60 * 1000;
+    
+        return Date.now() < endTime;
+    });
+      if (activeFixtures.length === 0) {
+        console.log("Retrieved today fixtures. All now ended.");
+        return;
+      }
+      scheduledFixture.push(
+        ...activeFixtures.map(row => ({
+          fixtureId: row.fixture_id,
+          homeTeam: row.home_team,
+          awayTeam: row.away_team,
+          kickOffTime: row.kickoff_time,
+          lineUpTime: row.lineup_time,
+          status: dt >= (new Date(row.kickoff_time).getTime() + (2 * 60 * 60 * 1000)) ? "finished" : dt >= new Date(row.kickoff_time).getTime() ? "live" : "scheduled",
+          date: row.date
           }))
         );
 
-        console.log(`[RECOVERY] Scheduled ${scheduledFixture.length} fixtures from Supabase`);
-    }
+      console.log(`[RECOVERY] Scheduled ${scheduledFixture.length} fixtures from Supabase`);
+    };
 
     liveFixtures.length = 0;
 
@@ -128,7 +145,7 @@ export async function scheduleFixturesForToday(jobs) {
           return;
         } finally {
           job.stop();
-          job.destroy(); 
+          job.destroy();
           if (!liveFixtures.find(x => x.fixtureId === f.fixtureId)) { liveFixtures.push(f) };
           // console.log("Cron for kickoff: " + f.homeTeam + " vs " + f.awayTeam + " Destroyed.");
         }
@@ -198,12 +215,12 @@ cron.schedule("*/10 * * * *", async () => {
     try {
       // check to know if finished
       if (Date.now() >= (new Date(fixture.kickOffTime).getTime() + (2 * 60 * 60 * 1000))) {
-        console.log(fixture.homeTeam + " - " + fixture.awayTeam + " is above live actions. Pulling");
+        console.log(fixture.homeTeam + " - " + fixture.awayTeam + " should be ended. Pulling");
         const index = liveFixtures.findIndex(f => f.fixtureId === fixture.fixtureId);
   
         if (index !== -1) {liveFixtures.splice(index,1)};
         
-        console.log("Removed.");
+        console.log("Removed from live fixtures.");
         continue;
       }
 
@@ -223,7 +240,7 @@ cron.schedule("*/10 * * * *", async () => {
         };
         const res = await axios.get(URL, PARAMS); 
         events = res.data.response;
-        console.log("Event res:", fixture.homeTeam +" - " + fixture.awayTeam, res.data.response);
+        console.log(`${fixture.homeTeam} - ${fixture.awayTeam}: ${events.length} events`);
         
         if (!events.length) { continue };
       } catch (err) {

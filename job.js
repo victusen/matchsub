@@ -44,10 +44,29 @@ cron.schedule("* * * * *", async () => {
 const PORT = process.env.PORT || 3000;
 http.createServer( async (req, res) => {
 
-  try {
-    const response = await axios.get("https://v3.football.api-sports.io/status", {headers: {"x-apisports-key": process.env.API_SPORT_KEY}});
+  if (req.url !== "/") {
+    res.writeHead(404);
+    return res.end("Not Found");
+  }
 
-    const data = response.data.response; 
+  let apiLimit = "Unavailable";
+
+  try {
+    const { data } = await axios.get(
+      "https://v3.football.api-sports.io/status",
+      {
+        headers: {
+          "x-apisports-key": process.env.API_SPORT_KEY,
+        },
+      }
+    );
+
+    const requests = data.response?.requests ?? {};
+
+    apiLimit = `${requests.current}/${requests.limit_day}`;
+  } catch (err) {
+    console.log("Status endpoint failed:", err.message);
+  };
 
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({
@@ -56,7 +75,7 @@ http.createServer( async (req, res) => {
       todayFixtures: scheduledFixture.length + " games: " + scheduledFixture.map(f => `${f.homeTeam} - ${f.awayTeam}`).join(", "),
       live: liveFixtures.length + " games: " + liveFixtures.map(f => `${f.homeTeam} - ${f.awayTeam}`).join(", "),
       jobs: jobs.length + " jobs in queue", 
-      "api-limit": data.requests.current + "/100 used"
+      "api-limit": apiLimit
     }, null, 2));
   } catch (error) {
     console.log("API limits check failed");
