@@ -14,9 +14,8 @@ export async function fetchTodayFixtures() {
 
     console.log(URL, PARAMS);
     
-
     try {
-        // const response = await axios.get(URL, PARAMS);
+        const response = await axios.get(URL, PARAMS);
         const fixtures = response.data.response;
         console.log("API in fetching todayFixtures: ", response.data.errors);
 
@@ -33,4 +32,4 @@ export async function fetchTodayFixtures() {
     }
 };
 
-fetchTodayFixtures(); 
+// fetchTodayFixtures(); 

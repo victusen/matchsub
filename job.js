@@ -56,20 +56,11 @@ http.createServer( async (req, res) => {
       todayFixtures: scheduledFixture.length + " games: " + scheduledFixture.map(f => `${f.homeTeam} - ${f.awayTeam}`).join(", "),
       live: liveFixtures.length + " games: " + liveFixtures.map(f => `${f.homeTeam} - ${f.awayTeam}`).join(", "),
       jobs: jobs.length + " jobs in queue", 
-      "api-limit": data.requests.current + "/100"
+      "api-limit": data.requests.current + "/100 used"
     }, null, 2));
   } catch (error) {
     console.log("API limits check failed");
     console.log(error);
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({
-      uptime: process.uptime().toFixed(0) + "s",
-      status: "running",        
-      todayFixtures: scheduledFixture.length + " games: " + scheduledFixture.map(f => `${f.homeTeam} - ${f.awayTeam}`).join(", "),
-      live: liveFixtures.length + " games: " + liveFixtures.map(f => `${f.homeTeam} - ${f.awayTeam}`).join(", "),
-      jobs: jobs.length + " jobs in queue", 
-      "api-limits-remaining": "Unknown"
-    }, null, 2));
   }
 }).listen(PORT, () => { console.log(`Server running on port ${PORT}`); })
 
