@@ -42,7 +42,7 @@ cron.schedule("* * * * *", async () => {
 
 // Check Render's server health (free web service tier requires HTTP)
 const PORT = process.env.PORT || 3000;
-http.createServer( async (req, res) => {
+http.createServer(async (req, res) => {
 
   if (req.url !== "/") {
     res.writeHead(404);
@@ -62,26 +62,33 @@ http.createServer( async (req, res) => {
     );
 
     const requests = data.response?.requests ?? {};
-
     apiLimit = `${requests.current}/${requests.limit_day}`;
   } catch (err) {
     console.log("Status endpoint failed:", err.message);
-  };
-
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({
-      uptime: process.uptime().toFixed(0) + "s",
-      status: "running",        
-      todayFixtures: scheduledFixture.length + " games: " + scheduledFixture.map(f => `${f.homeTeam} - ${f.awayTeam}`).join(", "),
-      live: liveFixtures.length + " games: " + liveFixtures.map(f => `${f.homeTeam} - ${f.awayTeam}`).join(", "),
-      jobs: jobs.length + " jobs in queue", 
-      "api-limit": apiLimit
-    }, null, 2));
-  } catch (error) {
-    console.log("API limits check failed");
-    console.log(error);
   }
-}).listen(PORT, () => { console.log(`Server running on port ${PORT}`); })
+
+  res.writeHead(200, {
+    "Content-Type": "application/json",
+  });
+
+  res.end(JSON.stringify({
+    uptime: process.uptime().toFixed(0) + "s",
+    status: "running",
+    todayFixtures:
+      scheduledFixture.length +
+      " games: " +
+      scheduledFixture.map(f => `${f.homeTeam} - ${f.awayTeam}`).join(", "),
+    live:
+      liveFixtures.length +
+      " games: " +
+      liveFixtures.map(f => `${f.homeTeam} - ${f.awayTeam}`).join(", "),
+    jobs: jobs.length + " jobs in queue",
+    "api-limit": apiLimit,
+  }, null, 2));
+
+}).listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
 
 function generateNumber(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
