@@ -56,19 +56,27 @@ http.createServer((req, res) => {
 function generateNumber(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 };
+
 async function pingAlways() {
   const randomDelay = generateNumber(360000, 660000);
 
   try {
     console.log("Pinging server");
+    
     const res = await fetch('https://matchsub.onrender.com');
-    if (res.ok) {
-      console.log("Server is up.", res.status);
+    
+    const resp = await fetch('https://matchsub-8jiw.onrender.com')
+    
+    if (res.ok || resp.ok) {
+      console.log("Server1 pinged. Status is", res.status);
+      console.log("Server2 pinged. Status is", resp.status);
+      
     } else {
-      console.log(`Server responded with ${res.status}`);
+      console.log(`Server1 responded with ${res.status}`);
+      console.log(`Server2 responded with ${resp.status}`);
     }
   } catch (err) {
-    console.log("Server is down\n", err.message, "\n");
+    console.log("A server is down\n", err.message, "\n");
   }
 
   console.log("pinging in: " + randomDelay/(1000 * 60) + "mins");

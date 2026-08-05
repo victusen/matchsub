@@ -13,6 +13,8 @@ export const scheduledFixture = [];
 export const liveFixtures = [];
 let activeJobs = [];
 
+activeJobs.length = 0;
+
 // Local reference to the jobs array passed from the entrypoint
 let jobsQueue = [];
 

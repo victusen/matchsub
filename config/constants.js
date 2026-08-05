@@ -2,32 +2,32 @@ export const watchedClubs = [
     // Premier League
     "Arsenal",
     "Aston Villa",
-    "AFC Bournemouth",
+    "Bournemouth",
     "Brentford",
-    "Brighton & Hove Albion",
+    "Brighton",
     "Chelsea",
     "Coventry City",
     "Crystal Palace",
     "Everton",
     "Fulham",
     // "Hull City",
-    // "Ipswich Town",
+    // "Ipswich",
     // "Leeds United",
     "Liverpool",
     "Manchester City",
     "Manchester United",
-    "Newcastle United",
+    "Newcastle",
     "Nottingham Forest",
     "Sunderland",
-    "Tottenham Hotspur",
+    "Tottenham",
     // La Liga
     "Barcelona",
     "Real Madrid",
     "Atlético Madrid",
     // "Valencia",
-    // "Sevilla",
+    "Sevilla",
     // "Villarreal",
-    // "Real Betis",
+    "Real Betis",
     // "Real Sociedad",
     // "Athletic Bilbao",
     // "Celta Vigo",
@@ -41,12 +41,12 @@ export const watchedClubs = [
     // "Mallorca",
     // "Cádiz",
     // Serie A
-    "Inter Milan",
+    "Inter",
     "AC Milan",
     "Juventus",
     "Napoli",
-    // "Roma",
-    // "Como"
+    "AS Roma",
+    "Como",
     // "Lazio",
     // "Atalanta",
     // "Fiorentina",
@@ -59,11 +59,10 @@ export const watchedClubs = [
     // "Hellas Verona",
     // "Parma",
     // "Cagliari",
-    // "Empoli",
     //"Sassuolo",
     // Ligue 1
     "Paris Saint-Germain",
-    // "Marseille",
+    "Marseille",
     "Lyon",
     "Monaco",
     // "Nice",
@@ -83,25 +82,40 @@ export const watchedClubs = [
     // "Amiens",
     // "Ajaccio",
     // Bundesliga
-    "Bayern Munich",
+    "Bayern München",
     "Borussia Dortmund",
     "RB Leipzig",
     "Bayer Leverkusen",
     // "Borussia Mönchengladbach",
     // "Eintracht Frankfurt",
     // "Schalke 04",
+    // "1899 Hoffenheim",
     // "1. FC Köln",
     // "VfB Stuttgart",
     // "Hertha BSC",
     // "Werder Bremen",
     // "FC Augsburg",
-    // "Mainz 05",
+    // "FSV Mainz 05",
     // "Freiburg",
     // "Union Berlin",
     // "Bochum",
     // "Arminia Bielefeld",
     // "Greuther Fürth"
 ];
+
+// SERIE A:  AC Milan, Atalanta, Bologna, Cagliari, Como, Fiorentina, Frosinone, Genoa, Inter, Juventus, Lazio, Lecce, Monza, Napoli, Parma, AS Roma, Sassuolo, Torino, Udinese, Venezia 
+
+
+
+// BUNDESLIGA: Borussia Mönchengladbach, Bayer Leverkusen, SC Freiburg, VfB Stuttgart, FSV Mainz 05, Union Berlin, 1899 Hoffenheim, FC Augsburg, Werder Bremen, RB Leipzig, Borussia Dortmund, Eintracht Frankfurt, Bayern München -- FC Schalke 04 , SV Elversberg , and SC Paderborn 07
+
+
+
+// PREMIER LEAGUE: Manchester United, Fulham, Ipswich, Liverpool, Newcastle, Arsenal, Everton, Brighton, Nottingham Forest, Bournemouth, Aston Villa, Brentford, Crystal Palace, Chelsea, Manchester City, Tottenham, ---Sunderland, Coventry, Hull, Leeds 
+
+
+
+// LA LIGA: Athletic Club, Getafe, Real Betis, Celta Vigo, Alaves, Las Palmas, Sevilla, Osasuna, Leganes, Valencia, Barcelona, Real Sociedad, Rayo Vallecano, Real Madrid, Valladolid, Espanyol, Villarreal, Atletico Madrid --- Deportivo La Coruña , Elche CF , Levante UD , Málaga CF , and Racing Santander
 
 export const watchedCountries = [
     // "Austria",
