@@ -6,13 +6,13 @@ export const watchedClubs = [
     "Brentford",
     "Brighton",
     "Chelsea",
-    "Coventry City",
+    "Coventry",
     "Crystal Palace",
     "Everton",
     "Fulham",
     // "Hull City",
     // "Ipswich",
-    // "Leeds United",
+    // "Leeds",
     "Liverpool",
     "Manchester City",
     "Manchester United",
@@ -61,7 +61,7 @@ export const watchedClubs = [
     // "Cagliari",
     //"Sassuolo",
     // Ligue 1
-    "Paris Saint-Germain",
+    "Paris Saint Germain",
     "Marseille",
     "Lyon",
     "Monaco",
@@ -100,7 +100,10 @@ export const watchedClubs = [
     // "Union Berlin",
     // "Bochum",
     // "Arminia Bielefeld",
-    // "Greuther Fürth"
+    // "Greuther Fürth",
+    // "Turkish Liga"
+    "Galatasaray",
+    "Fenerbahçe"
 ];
 
 // SERIE A:  AC Milan, Atalanta, Bologna, Cagliari, Como, Fiorentina, Frosinone, Genoa, Inter, Juventus, Lazio, Lecce, Monza, Napoli, Parma, AS Roma, Sassuolo, Torino, Udinese, Venezia 

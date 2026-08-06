@@ -26,7 +26,7 @@ function sleep(ms) {
 cron.schedule("* * * * *", async () => {
   if (jobs.length === 0) return;
 
-  console.log(jobs.length, " posts queued in jobs, for posting");
+  console.log(jobs.length, " posts queued for posting");
   
   const jobsToProcess = jobs.splice(0);
 
@@ -61,8 +61,11 @@ http.createServer(async (req, res) => {
       }
     );
 
-    const requests = data.response?.requests ?? {};
-    apiLimit = `${requests.current}/${requests.limit_day}`;
+    const requests = data?.response?.requests;
+
+    apiLimit = requests
+      ? `${requests.current}/${requests.limit_day}`
+      : "Unavailable";
   } catch (err) {
     console.log("Status endpoint failed:", err.message);
   }
