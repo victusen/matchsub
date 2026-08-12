@@ -356,7 +356,7 @@ function getSubString(ev) {
   let subStr = "";
   if (Array.isArray(ev)) {
     ev.forEach(e => {
-      subStr += `⬆️ Sub in: ${e.player?.name ?? ""} (${e.time.elapsed}\`) \n⬇️ Sub out: ${e.assist?.name ?? ""}\n\n`
+      subStr += `⬆️ Sub Out: ${e.player?.name ?? ""} (${e.time.elapsed}\`) \n⬇️ Sub In: ${e.assist?.name ?? ""}\n\n`
     })
   }
   return subStr;
@@ -410,7 +410,7 @@ function getSubPostString(teamEvents, events, fixture, teamName) {
 
 ${subs}
 
-Live top matches on player of the match`
+📱 Follow on Player of the Match`
       );
   }
 
