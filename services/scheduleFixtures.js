@@ -355,7 +355,7 @@ function getSubString(ev) {
   let subStr = "";
   if (Array.isArray(ev)) {
     ev.forEach(e => {
-      subStr += `⬆️ Sub in: ${e.player?.name ?? ""} (${e.time.elapsed}\`) \n⬇️ Sub out: ${e.assist?.name ?? ""}\n\n`
+      subStr += `⬆️ Sub in: ${e.player?.name ?? ""} (${e.time.elapsed}') \n⬇️ Sub out: ${e.assist?.name ?? ""}\n\n`
     })
   }
   return subStr;
