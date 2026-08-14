@@ -24,7 +24,7 @@ export default function getLineup(arr) {
     // console.log(hSub);
     // console.log(aSub);
 
-    return hT.team.name + " XI: " + hL + "\n\n" + aT.team.name + " XI: " + aL + "\n\n follow live on player of the match";
+    return hT.team.name + " XI: " + hL + "\n\n" + aT.team.name + " XI: " + aL + "\n\nFollow on Player of the Match";
 };
 
 // const subsStr = "👕 Subs: " + hSub + "\n" + "👕 Subs: " + aSub;

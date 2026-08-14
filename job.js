@@ -15,7 +15,7 @@ await scheduleFixturesForToday(jobs);
 
 // Schedule daily sync at 08:00 AM
 cron.schedule("0 8 * * *", async () => {
-    console.log("Daily sync: Loading... today fixtures for the new day");
+    console.log("Daily sync: Loading today fixtures...");
     await scheduleFixturesForToday(jobs);
 }, {timezone: "Africa/Lagos"});
 
@@ -26,13 +26,11 @@ function sleep(ms) {
 cron.schedule("* * * * *", async () => {
   if (jobs.length === 0) return;
 
-  console.log(jobs.length, " posts queued for posting");
-  
   const jobsToProcess = jobs.splice(0);
 
   let i = 1;
   for (const job of jobsToProcess) {
-    console.log(`[QUEUED:] JOB${i}`);
+    console.log(`[QUEUED]: JOB${i}`);
     await postToFacebook(job); 
     await sleep(15000);
 
