@@ -173,7 +173,7 @@ export async function scheduleFixturesForToday(jobs) {
       activeJobs.push(job, ljob);
     });
     
-    console.log("Lineup/Kickoff schedules are set for today. Hope the server don't crash 🙌");
+    console.log("Lineup/Kickoff schedules are set. Hope the server don't crash 🙌");
     
   } catch (error) {
     console.log("scheduleFixturesForToday failed");
@@ -355,7 +355,7 @@ function getSubString(ev) {
   let subStr = "";
   if (Array.isArray(ev)) {
     ev.forEach(e => {
-      subStr += `⬆️ Sub in: ${e.player?.name ?? ""} (${e.time.elapsed}') \n⬇️ Sub out: ${e.assist?.name ?? ""}\n\n`
+      subStr += `⬆️ Sub Out: ${e.player?.name ?? ""} (${e.time.elapsed}') \n⬇️ Sub In: ${e.assist?.name ?? ""}\n\n`
     })
   }
   return subStr;
