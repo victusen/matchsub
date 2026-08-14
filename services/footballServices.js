@@ -12,7 +12,7 @@ export async function fetchTodayFixtures() {
         }
     };
 
-    console.log(URL, PARAMS);
+    // console.log(URL, PARAMS);
     
     try {
         const response = await axios.get(URL, PARAMS);

@@ -159,7 +159,7 @@ export async function scheduleFixturesForToday(jobs) {
           
           if (post) {
             jobsQueue.push(post);
-            console.log(f.homeTeam, " - ", f.awayTeam, "lineup post sent to queue. Qty:", jobsQueue.length, "IN QUEUE");
+            console.log(f.homeTeam, " - ", f.awayTeam, ": Live. Qty:", jobsQueue.length, "IN QUEUE");
           }
         } catch (err) {
           console.log("Lineup: " + f.homeTeam + " - " + f.awayTeam + " Failed.");
@@ -224,7 +224,7 @@ cron.schedule("*/10 * * * *", async () => {
         continue;
       }
 
-      console.log(fixture.homeTeam + "-" + fixture.awayTeam, "is still live.")      
+      console.log(fixture.homeTeam + " - " + fixture.awayTeam + ", still live.")      
   
       let events = [];
   
@@ -332,7 +332,6 @@ function getCurrentScore(events, fixture) {
   return { home, away };
 } 
 */
-
 function getCurrentScoreUntil(events, fixture, minute) {
 
   let home = 0;
@@ -356,15 +355,14 @@ function getSubString(ev) {
   let subStr = "";
   if (Array.isArray(ev)) {
     ev.forEach(e => {
-      subStr += `⬆️ Sub in: ${e.player?.name ?? ""} (${e.time.elapsed}\`) \n⬇️ Sub out: ${e.assist?.name ?? ""}\n\n`
+      subStr += `⬆️ Sub Out: ${e.player?.name ?? ""} (${e.time.elapsed}\') \n⬇️ Sub In: ${e.assist?.name ?? ""}\n\n`
     })
   }
   return subStr;
 }; 
-
 function getSubPostString(teamEvents, events, fixture, teamName) {
   if (!teamEvents.length) {
-    console.log(`${teamName} in ${fixture.homeTeam} - ${fixture.awayTeam} is watched. Skipping.`);
+    console.log(`${teamName} in \( ${fixture.homeTeam} - ${fixture.awayTeam} \), no new event. Skipping.`);
     return [];
   }
 
@@ -397,12 +395,12 @@ function getSubPostString(teamEvents, events, fixture, teamName) {
 
       const homeName =
     teamName === fixture.homeTeam
-        ? `[${prefName(fixture.homeTeam)}]`
+        ? `[ ${prefName(fixture.homeTeam)} ]`
         : prefName(fixture.homeTeam);
 
       const awayName =
     teamName === fixture.awayTeam
-        ? `[${prefName(fixture.awayTeam)}]`
+        ? `[ ${prefName(fixture.awayTeam)} ]`
         : prefName(fixture.awayTeam);
 
       posts.push(
@@ -410,7 +408,7 @@ function getSubPostString(teamEvents, events, fixture, teamName) {
 
 ${subs}
 
-Live top matches on player of the match`
+📱 Follow on Player of the Match`
       );
   }
 
