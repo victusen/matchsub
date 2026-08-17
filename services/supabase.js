@@ -27,7 +27,6 @@ export async function insertToSupabase({fixture_id, home_team, away_team, kickof
             console.log("Supabase Error:", error);
             return;
         }
-        console.log("All fixtures are set in Supabase");
     } catch (error) {
         console.log("Unexpected Error:", error);
     }
