@@ -314,7 +314,7 @@ async function updateLastSubProcessed(fixtureId, updated) {
     console.error(`Failed to update last_subs_processed for ${fixtureId}:`, error.message);
   }
 };
-=
+
 /* 
 function getCurrentScore(events, fixture) {
   let home = 0;
