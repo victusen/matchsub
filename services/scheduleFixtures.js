@@ -173,7 +173,7 @@ export async function scheduleFixturesForToday(jobs) {
       activeJobs.push(job, ljob);
     });
     
-    console.log("Lineup/Kickoff schedules are set. Hope the server don't crash 🙌");
+    console.log("Lineup/Kickoff schedules are set for today. Hope the server don't crash 🙌");
     
   } catch (error) {
     console.log("scheduleFixturesForToday failed");
@@ -314,7 +314,7 @@ async function updateLastSubProcessed(fixtureId, updated) {
     console.error(`Failed to update last_subs_processed for ${fixtureId}:`, error.message);
   }
 };
-
+=
 /* 
 function getCurrentScore(events, fixture) {
   let home = 0;
