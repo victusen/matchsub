@@ -244,7 +244,21 @@ cron.schedule("*/10 * * * *", async () => {
         
         if (!events.length) { continue };
       } catch (err) {
-        console.log(err);
+        const status = err.response?.status;
+        const retryAfter = err.response?.headers?.["retry-after"];
+      
+        if (status === 429) {
+          console.warn(
+            `[API 429] ${fixture.homeTeam} - ${fixture.awayTeam} events request rate limited. ` +
+            `Retry after ${retryAfter ?? "unknown"}s.`
+          );
+        } else {
+          console.error(
+            `[API ERROR] ${fixture.homeTeam} - ${fixture.awayTeam} ` +
+            `| Status: ${status ?? "unknown"} | ${err.message}`
+          );
+        }
+      
         continue;
       }
         
