@@ -3,6 +3,7 @@ import { watchedClubs, watchedCountries } from "../config/constants.js";
 const watchedCountriesLower = watchedCountries.map(c => c.toLowerCase());
 const watchedClubsLower = watchedClubs.map(c => c.toLowerCase());
 
+
 export function filterMenFixtures(fixtures) {
   if (!fixtures || !Array.isArray(fixtures)) return [];
   
@@ -17,7 +18,7 @@ export function filterMenFixtures(fixtures) {
   });
 }
 
-export function filterWatchedTeam(fixture) {
+export function filterWatchedTeamsInEvent(fixture) {
     const home = fixture.homeTeam.toLowerCase();
     const away = fixture.awayTeam.toLowerCase();
 

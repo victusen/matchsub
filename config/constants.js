@@ -63,7 +63,7 @@ export const watchedClubs = [
     // Ligue 1
     "Paris Saint Germain",
     "Marseille",
-    "Lyon",
+    // "Lyon",
     "Monaco",
     // "Nice",
     // "Rennes",
@@ -172,3 +172,109 @@ export const watchedCountries = [
     "Mexico",
     // "United States"
 ];
+
+export const clubNamebyID = {
+  // Premier League
+  "42": "Arsenal",
+  "66": "Aston Villa",
+  "35": "Bournemouth",
+  "55": "Brentford",
+  "51": "Brighton",
+  "49": "Chelsea",
+  "1346": "Coventry",
+  "52": "Crystal Palace",
+  "45": "Everton",
+  "36": "Fulham",
+  "64": "Hull",
+  "57": "Ipswich",
+  "63": "Leeds",
+  "40": "Liverpool",
+  "50": "Man City",
+  "33": "Man Utd",
+  "34": "Newcastle",
+  "65": "Nottingham",
+  "746": "Sunderland",
+  "47": "Tottenham",
+
+  // La Liga
+  "529": "Barcelona",
+  "541": "Real Madrid",
+  "530": "Atletico Madrid",
+  "536": "Sevilla",
+  "543": "Betis",
+
+  // Serie A
+  "505": "Inter",
+  "489": "Milan",
+  "496": "Juventus",
+  "492": "Napoli",
+  "497": "Roma",
+  "895": "Como",
+
+  // Ligue 1
+  "85": "PSG",
+  "81": "Marseille",
+  "80": "Lyon",
+  "91": "Monaco",
+  "116": "Lens",
+
+  // Bundesliga
+  "157": "Bayern Munich",
+  "165": "Borussia Dortmund",
+  "173": "RB Leipzig",
+  "168": "Bayer Leverkusen",
+
+  // Turkish Süper Lig
+  "645": "Galatasaray",
+  "611": "Fenerbahce",
+
+  // National Teams
+  "1": "Belgium",
+  "2": "France",
+  "3": "Croatia",
+  "4": "Russia",
+  "5": "Sweden",
+  "6": "Brazil",
+  "7": "Uruguay",
+  "8": "Colombia",
+  "9": "Spain",
+  "10": "England",
+  "11": "Panama",
+  "12": "Japan",
+  "13": "Senegal",
+  "14": "Serbia",
+  "15": "Switzerland",
+  "16": "Mexico",
+  "17": "South Korea",
+  "18": "Iceland",
+  "19": "Nigeria",
+  "20": "Australia",
+  "21": "Denmark",
+  "22": "Iran",
+  "23": "Saudi Arabia",
+  "24": "Poland",
+  "25": "Germany",
+  "26": "Argentina",
+  "27": "Portugal",
+  "28": "Tunisia",
+  "29": "Costa Rica",
+  "30": "Peru",
+  "31": "Morocco",
+  "32": "Egypt"
+};
+
+/* COUNTRY: Belgium -1, France -2, Croatia -3, Russia -4, Sweden -5, Brazil -6, Uruguay -7, Colombia -8, Spain -9, England -10, Panama -11, Japan -12, Senegal -13, Serbia -14, Switzerland -15, Mexico -16, South Korea -17, Iceland -18, Nigeria -19, Australia -20, Denmark -21, Iran -22, Saudi Arabia -23, Poland -24, Germany -25, Argentina -26, Portugal -27, Tunisia -28, Costa Rica -29, Peru -30, Morocco -31, Egypt -32, 
+
+PREM: Manchester United -33, Newcastle -34, Fulham -36, Liverpool -40, Everton -45, Tottenham -47, Chelsea -49, Manchester City -50, Crystal Palace -52, Ipswich -57, Leeds -63, Hull City -64, Nottingham Forest -65, --coventry, --sunderland 
+
+SPAIN: Barcelona -529, Real Madrid -541, Atletico Madrid -530, Sevilla -536,  Real Betis -543, 
+
+ITALY:  Inter -505, AC Milan -489, Juventus -496, Napoli -492, AS Roma -497, Como -895, 
+
+FRANCE: Paris Saint Germain -85, Marseille -81, Lyon -80, Monaco -91, Lens -116, 
+
+GERMANY: Bayern München -157, Borussia Dortmund -165, RB Leipzig -173, Bayer Leverkusen -168, 
+
+TURKEY:
+
+*/

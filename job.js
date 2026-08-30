@@ -14,7 +14,7 @@ export const jobs = [];
 await scheduleFixturesForToday(jobs);
 
 // Schedule daily sync at 08:00 AM
-cron.schedule("0 8 * * *", async () => {
+cron.schedule("0 7 * * *", async () => {
     console.log("Daily sync: Loading today fixtures...");
     await scheduleFixturesForToday(jobs);
 }, {timezone: "Africa/Lagos"});
@@ -40,6 +40,7 @@ cron.schedule("* * * * *", async () => {
 
 // Check Render's server health (free web service tier requires HTTP)
 const PORT = process.env.PORT || 3000;
+
 http.createServer(async (req, res) => {
 
   if (req.url !== "/") {
