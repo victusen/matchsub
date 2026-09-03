@@ -358,7 +358,7 @@ export async function scheduleFixturesForToday(jobs) {
 
       const startMinute = teamEvents[i].time.elapsed;
 
-      const { homeScore, awayScore } = await getCurrentScore(events, fixture, startMinute);
+      const { homeScore, awayScore } = getCurrentScore(events, fixture, startMinute);
 
       const group = [];
 

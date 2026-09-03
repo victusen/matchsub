@@ -4,7 +4,7 @@ import reformPostName from "./reform-post-name.js"
 import prefName from "./get-post-name.js"
 
 
-export default async function getSubPostString(teamEvents, events, fixture, teamName) {
+export default function getSubPostString(teamEvents, events, fixture, teamName) {
   
   if (!teamEvents.length) {
     console.log(`${teamName} in \(${fixture.homeTeam} - ${fixture.awayTeam}\), no new event. Skipping.`);
@@ -24,7 +24,7 @@ export default async function getSubPostString(teamEvents, events, fixture, team
 
       const startMinute = teamEvents[i].time.elapsed;
 
-      const { homeScore, awayScore } = await getCurrentScore(events, fixture, startMinute);
+      const { homeScore, awayScore } = getCurrentScore(events, fixture, startMinute);
 
       const group = [];
 
